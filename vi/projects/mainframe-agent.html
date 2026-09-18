@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Buộc một LLM agent trả lời từ mã COBOL · Bùi Henry</title>
+<meta name="description" content="Parser ANTLR4 chuyển COBOL/JCL/CopyBook thành JSON có cấu trúc; MCP tool cho agent tra phụ thuộc thật. Câu trả lời không có căn cứ giảm từ ~50% xuống ~20%.">
+<meta property="og:title" content="Buộc một LLM agent trả lời từ mã COBOL · Bùi Henry">
+<meta property="og:description" content="Parser ANTLR4 chuyển COBOL/JCL/CopyBook thành JSON có cấu trúc; MCP tool cho agent tra phụ thuộc thật. Câu trả lời không có căn cứ giảm từ ~50% xuống ~20%.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://buihenry1404.github.io/vi/projects/mainframe-agent.html">
+<meta property="og:image" content="https://buihenry1404.github.io/assets/henry.jpg">
+<link rel="canonical" href="https://buihenry1404.github.io/vi/projects/mainframe-agent.html">
+<link rel="alternate" hreflang="vi" href="https://buihenry1404.github.io/vi/projects/mainframe-agent.html">
+<link rel="alternate" hreflang="en" href="https://buihenry1404.github.io/projects/mainframe-agent.html">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%230B1120'/><text x='50' y='72' font-size='64' font-family='monospace' font-weight='bold' fill='%2322C55E' text-anchor='middle'>H</text></svg>">
+<link rel="stylesheet" href="../../assets/style.css">
+<noscript><style>.reveal{opacity:1!important;transform:none!important}</style></noscript>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap nav__inner">
+    <a class="nav__home" href="../">~/buihenry</a>
+    <div class="nav__links">
+      <a href="../#work">Kinh nghiệm</a>
+      <a href="../#skills">Kỹ năng</a>
+      <a href="../#contact">Liên hệ</a>
+      <span class="lang"><a href="../../projects/mainframe-agent.html" hreflang="en">EN</a><a href="../" hreflang="vi" aria-current="true">VI</a></span>
+    </div>
+  </div>
+</nav>
+
+<article class="wrap article">
+  <h1>Buộc một LLM agent trả lời từ mã COBOL 50 năm tuổi</h1>
+  <div class="article__meta">Mainframe modernization · FPT Software · 11/2025 – 04/2026</div>
+
+  <p class="lead">
+    Một trợ lý AI cho kỹ sư bảo trì chương trình mainframe. Phần khó chưa bao giờ nằm ở giao diện
+    chat, mà ở chỗ làm sao để agent trả lời dựa trên mã nguồn thật, thay vì dựa trên những gì mô
+    hình đoán rằng COBOL thường trông như thế nào.
+  </p>
+
+  <h2>Bài toán</h2>
+  <p>
+    Hệ thống mainframe của khách hàng đã chạy hàng chục năm, và giờ rất ít người còn nắm được
+    toàn bộ. Một kỹ sư nhận yêu cầu bảo trì cần biết thay đổi của mình ảnh hưởng tới chương trình
+    nào, job nào gọi chương trình đó, và copybook nào định nghĩa bản ghi liên quan. Tự tìm bằng
+    tay thì phải đọc hàng nghìn dòng nằm rải rác ở nhiều file, mà các file này lại tham chiếu
+    nhau một cách gián tiếp.
+  </p>
+  <p>
+    Hỏi một LLM thông thường thì nó trả lời sai nhưng rất tự tin. Hỏi chương trình này phụ thuộc
+    copybook nào, nó đưa ra một câu nghe rất hợp lý, đúng cú pháp, và sai. Trong công việc bảo
+    trì, kiểu sai đó còn tệ hơn là không trả lời: một dependency sai khiến kỹ sư đi sửa nhầm
+    file. Vì vậy agent phải được thiết kế sao cho nó <strong>không thể</strong> trả lời chỉ dựa
+    vào trí nhớ của mô hình.
+  </p>
+
+  <h2>Cách tiếp cận: parse trước, rồi để mô hình tự tra</h2>
+  <p>
+    Thay vì đổ mã nguồn thô vào context window rồi hy vọng mô hình tự hiểu, tôi dựng một pipeline
+    biến codebase thành dữ liệu có cấu trúc tra cứu được, rồi cho mô hình các công cụ để tra.
+  </p>
+
+  <div class="flow">
+    <span>COBOL / JCL / CopyBook</span> <b>→</b>
+    <span>parser ANTLR4</span> <b>→</b>
+    <span>JSON có cấu trúc</span> <b>→</b>
+    <span>MCP tool</span> <b>→</b>
+    <span>LLM</span>
+  </div>
+
+  <h3>1. Grammar ANTLR4</h3>
+  <p>
+    Tôi viết grammar cho COBOL, JCL và CopyBook, đầu ra là JSON gồm chương trình, biến, bố cục
+    bản ghi và quan hệ phụ thuộc giữa chúng. Yêu cầu tôi đặt ra cho parser là tuyệt đối chứ không
+    chấp nhận tỉ lệ: <strong>mọi file đều phải parse được, không bỏ sót cấu trúc nào</strong>,
+    trên bộ tham chiếu 32 file COBOL / 16 file JCL và khoảng 3 triệu dòng mã nội bộ.
+  </p>
+  <p>
+    Mã mainframe ngoài đời khó hơn nhiều so với tài liệu mô tả. Câu lệnh phải nằm đúng cột theo
+    chuẩn fixed-format của IBM. Copybook được chèn thẳng vào mã như chèn văn bản, và nội dung còn
+    có thể bị thay thế ngay lúc chèn. Mỗi nơi lại dùng một biến thể COBOL hơi khác nhau. Nếu
+    parser âm thầm bỏ qua những chỗ nó không hiểu, đồ thị phụ thuộc sinh ra sẽ bị thủng — và đúng
+    những chỗ thủng đó là nơi agent bắt đầu bịa.
+  </p>
+
+  <h3>2. MCP tool trên dữ liệu đã parse</h3>
+  <p>
+    Tôi phát triển <strong>7 trong hơn 20 MCP tool</strong> của nền tảng, tập trung vào những
+    truy vấn bắt buộc phải chính xác:
+  </p>
+  <ul>
+    <li><strong>Trích xuất phụ thuộc</strong> — chương trình, job và copybook nào tham chiếu tới nhau, và theo chiều nào.</li>
+    <li><strong>Phân tích trường CopyBook</strong> — độ dài, kiểu dữ liệu và vị trí byte của từng biến trong một bản ghi.</li>
+    <li><strong>Phân giải quan hệ</strong> COBOL ↔ JCL ↔ CopyBook, để một câu hỏi về job có thể trả lời thông qua các chương trình mà job đó chạy.</li>
+  </ul>
+  <p>
+    Phân tích trường là chỗ không được phép xấp xỉ. Bản ghi mainframe có độ rộng cố định, nên ý
+    nghĩa của một trường chính là dải byte mà nó chiếm. Lệch một byte không cho ra câu trả lời
+    hơi sai — nó cho ra một trường hoàn toàn khác. Tool tính vị trí byte chính xác tuyệt đối, nên
+    mọi câu trả lời sau đó về cấu trúc dữ liệu đều dựa trên con số đúng, không phải phỏng đoán
+    của mô hình.
+  </p>
+
+  <div class="callout">
+    <p>
+      <strong>Nguyên tắc thiết kế:</strong> không bao giờ đặt mô hình vào tình huống mà nó có thể
+      trả lời bằng cách nhớ lại &ldquo;COBOL thường làm thế nào&rdquo;. Mọi thông tin về codebase
+      này đều phải đi qua một lời gọi tool, và tool thì đọc từ mã nguồn đã parse.
+    </p>
+  </div>
+
+  <h3>3. Tự xây layer memory</h3>
+  <p>
+    Ban đầu nhóm dùng một thư viện agent-memory có sẵn, rồi thấy không đủ. Bài toán này không cần
+    một kho sự kiện được nhớ lại, mà cần ba kiểu tra cứu khác nhau trả lời cùng lúc, nên tôi tự
+    xây layer đó.
+  </p>
+  <p>
+    Một câu hỏi kiểu <em>&ldquo;CUSTOMER-ID ảnh hưởng những đâu?&rdquo;</em> được tách thành ba
+    hướng tra trước khi mô hình viết chữ nào:
+  </p>
+  <div class="flow">
+    <span>câu hỏi</span> <b>→</b>
+    <span>truy vấn graph</span> <b>+</b>
+    <span>semantic retrieval (vector DB)</span> <b>+</b>
+    <span>lấy source</span>
+    <b>→</b> <span>LLM tổng hợp</span>
+  </div>
+  <ul>
+    <li><strong>Knowledge graph</strong> giữ đúng cấu trúc mà parser sinh ra — chương trình nào đọc trường nào, job nào chạy chương trình nào. Câu hỏi về phụ thuộc được trả lời ở đây, và câu trả lời là đúng chứ không phải nghe hợp lý.</li>
+    <li><strong>Vector store</strong> lo phần ngữ nghĩa: tìm ra vùng liên quan khi câu hỏi không nêu một định danh cụ thể để graph bám vào.</li>
+    <li><strong>Mã nguồn</strong> được lấy sau cùng, để mô hình suy luận trên code thật chứ không phải trên bản tóm tắt.</li>
+  </ul>
+  <p>
+    Tách như vậy là vì hai nửa này hỏng theo hai kiểu khác nhau. Đi trên graph thì chính xác
+    nhưng chỉ trả lời được những gì đã mô hình hoá; tìm theo ngữ nghĩa thì luôn trả về thứ gì đó,
+    nhưng có thể trả về nhầm. Chạy cả hai rồi để mô hình tổng hợp thì chỗ nào có dữ liệu chính
+    xác sẽ bám vào dữ liệu đó, chỗ nào không có vẫn còn thứ dùng được. Layer này tách riêng theo
+    từng dự án nên ngữ cảnh cũng được giữ qua nhiều phiên làm việc — kỹ sư không phải nhắc lại
+    mình đang làm chương trình nào mỗi lần quay lại, nhờ đó số câu hỏi làm rõ bị lặp giảm khoảng
+    75%.
+  </p>
+  <p>
+    Bản thân agent chạy trên LangGraph theo vòng
+    <code>retrieve → reason → tool call → answer</code>, backend viết bằng FastAPI.
+  </p>
+
+  <h2>Kết quả</h2>
+  <table class="res">
+    <tr><th>Chỉ số</th><th>Đo thế nào</th><th>Kết quả</th></tr>
+    <tr>
+      <td>Câu trả lời không có căn cứ</td>
+      <td>Bộ 10–20 câu hỏi trên mã nguồn công khai AWS Mainframe Modernization CardDemo</td>
+      <td>~50% → ~20%</td>
+    </tr>
+    <tr>
+      <td>Độ phủ parse</td>
+      <td>Bộ tham chiếu 32 COBOL / 16 JCL + ~3 triệu dòng mã nội bộ</td>
+      <td>100%, 0 lỗi</td>
+    </tr>
+    <tr>
+      <td>Độ chính xác vị trí byte</td>
+      <td>Bố cục bản ghi CopyBook</td>
+      <td>0 sai lệch</td>
+    </tr>
+    <tr>
+      <td>Câu hỏi làm rõ bị lặp lại</td>
+      <td>So sánh trước và sau khi có layer memory</td>
+      <td>giảm ~75%</td>
+    </tr>
+    <tr>
+      <td>Độ đúng của sơ đồ luồng</td>
+      <td>Sơ đồ agent vẽ ra so với luồng chạy thật của chương trình</td>
+      <td>70–80%</td>
+    </tr>
+  </table>
+  <p>
+    Con số chính có thể đọc theo hai chiều: câu trả lời có dẫn nguồn tăng từ ~50% lên ~80%, cũng
+    tức là câu không có căn cứ giảm khoảng 60%. Agent phục vụ 5–6 kỹ sư trong dự án.
+  </p>
+  <p>
+    Con số về sơ đồ luồng mới là con số đáng nhìn nhất. 70–80% đủ hữu ích để định hướng, nhưng
+    không đủ an toàn để tin tuyệt đối — và tôi nói đúng như vậy với các kỹ sư dùng nó.
+  </p>
+
+  <h2>Công nghệ</h2>
+  <div class="tags">
+    <span class="tag">Python</span><span class="tag">ANTLR4</span><span class="tag">MCP</span>
+    <span class="tag">LangGraph</span><span class="tag">LangChain</span><span class="tag">FastAPI</span>
+    <span class="tag">Knowledge graph</span><span class="tag">Vector DB</span><span class="tag">RAG</span>
+    <span class="tag">COBOL / JCL / CopyBook</span><span class="tag">Docker</span>
+  </div>
+
+  <a class="backlink" href="../#work">← Tất cả dự án</a>
+</article>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Bùi Henry</span>
+    <span><a href="https://mail.google.com/mail/?view=cm&amp;fs=1&amp;to=buihenry1404@gmail.com&amp;su=Opportunity%20for%20B%C3%B9i%20Henry" target="_blank" rel="noopener">buihenry1404@gmail.com</a></span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var rm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var els = document.querySelectorAll('.reveal');
+  if (!rm && 'IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { rootMargin: '0px 0px -10% 0px' });
+    els.forEach(function (el) { io.observe(el); });
+  } else {
+    els.forEach(function (el) { el.classList.add('in'); });
+  }
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Grounding an LLM agent in COBOL · Bùi Henry</title>
+<meta name="description" content="ANTLR4 parsers turn COBOL/JCL/CopyBook into structured JSON; MCP tools let the agent query real dependencies. Ungrounded answers fell from ~50% to ~20%.">
+<meta property="og:title" content="Grounding an LLM agent in COBOL · Bùi Henry">
+<meta property="og:description" content="ANTLR4 parsers turn COBOL/JCL/CopyBook into structured JSON; MCP tools let the agent query real dependencies. Ungrounded answers fell from ~50% to ~20%.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://buihenry1404.github.io/projects/mainframe-agent.html">
+<meta property="og:image" content="https://buihenry1404.github.io/assets/henry.jpg">
+<link rel="canonical" href="https://buihenry1404.github.io/projects/mainframe-agent.html">
+<link rel="alternate" hreflang="en" href="https://buihenry1404.github.io/projects/mainframe-agent.html">
+<link rel="alternate" hreflang="vi" href="https://buihenry1404.github.io/vi/projects/mainframe-agent.html">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%230B1120'/><text x='50' y='72' font-size='64' font-family='monospace' font-weight='bold' fill='%2322C55E' text-anchor='middle'>H</text></svg>">
+<link rel="stylesheet" href="../assets/style.css">
+<noscript><style>.reveal{opacity:1!important;transform:none!important}</style></noscript>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap nav__inner">
+    <a class="nav__home" href="../">~/buihenry</a>
+    <div class="nav__links">
+      <a href="../#work">Experience</a>
+      <a href="../#skills">Skills</a>
+      <a href="../#contact">Contact</a>
+      <span class="lang"><a href="../" hreflang="en" aria-current="true">EN</a><a href="../vi/projects/mainframe-agent.html" hreflang="vi">VI</a></span>
+    </div>
+  </div>
+</nav>
+
+<article class="wrap article">
+  <h1>Grounding an LLM agent in 50-year-old COBOL</h1>
+  <div class="article__meta">Mainframe modernization · FPT Software · Nov 2025 – Apr 2026</div>
+
+<p class="lead">
+    An AI assistant for engineers maintaining mainframe programs. The hard part was never the
+    chat interface — it was making sure the agent answered from the actual code rather than
+    from what a language model assumes COBOL probably looks like.
+  </p>
+
+  <h2>The problem</h2>
+  <p>
+    The account&rsquo;s mainframe estate is a body of legacy code that few people still fully understand. An
+    engineer picking up a maintenance request needs to know which programs a change touches,
+    which jobs call them, and which copybooks define the records involved. Answering that by
+    hand means reading thousands of lines across files that reference each other indirectly.
+  </p>
+  <p>
+    A plain LLM is confidently wrong at this. Ask it which copybook a program depends on and it
+    will produce something plausible, correctly formatted, and not true. For maintenance work
+    that is worse than useless: a wrong dependency answer sends an engineer to change the wrong
+    file. The agent needed to be <strong>unable</strong> to answer from memory alone.
+  </p>
+
+  <h2>The approach: parse first, then let the model ask</h2>
+  <p>
+    Rather than feeding raw source into a context window and hoping, I built a pipeline that
+    turns the codebase into queryable structured data, then gave the model tools to query it.
+  </p>
+
+  <div class="flow">
+    <span>COBOL / JCL / CopyBook</span> <b>→</b>
+    <span>ANTLR4 parsers</span> <b>→</b>
+    <span>structured JSON</span> <b>→</b>
+    <span>MCP tools</span> <b>→</b>
+    <span>LLM</span>
+  </div>
+
+  <h3>1. ANTLR4 grammars</h3>
+  <p>
+    I wrote grammars for COBOL, JCL and CopyBook that emit JSON: programs, variables,
+    record layouts and the dependency edges between them. The bar I held the parser to was
+    absolute rather than statistical — <strong>every file parses, with zero unrecognised
+    constructs</strong>, across a 32-COBOL / 16-JCL reference set and roughly 3 million lines of
+    internal code.
+  </p>
+  <p>
+    Real mainframe source punishes generic parsers. Statements obey IBM fixed-format column
+    rules, copybooks are textually included and can be re-written on inclusion, and the dialect
+    varies by shop. A parser that silently skips what it does not recognise produces a
+    dependency graph with holes in it — and holes are exactly where an agent starts inventing.
+  </p>
+
+  <h3>2. MCP tools over the parsed data</h3>
+  <p>
+    I developed <strong>7 of the platform's 20+ MCP tools</strong>, covering the queries that
+    have to be exact:
+  </p>
+  <ul>
+    <li><strong>Dependency extraction</strong> — which programs, jobs and copybooks reference each other, and in which direction.</li>
+    <li><strong>CopyBook field analysis</strong> — the length, data type and byte offset of every variable in a record layout.</li>
+    <li><strong>Relationship resolution</strong> across COBOL ↔ JCL ↔ CopyBook, so a question about a job can be answered in terms of the programs it runs.</li>
+  </ul>
+  <p>
+    Field analysis is the one where approximation is not an option. Mainframe records are
+    fixed-width: a field's meaning is its byte range. Being off by one byte does not produce a
+    slightly wrong answer, it produces a different field. The tools compute offsets exactly, so
+    every downstream answer about record structure inherits that precision rather than the
+    model's guess.
+  </p>
+
+  <div class="callout">
+    <p>
+      <strong>The design principle:</strong> the model never sees a question it can answer by
+      recalling what COBOL usually does. Anything factual about this codebase is behind a tool
+      call, and the tool reads parsed source.
+    </p>
+  </div>
+
+  <h3>3. A memory layer of our own</h3>
+  <p>
+    We started on an off-the-shelf agent-memory library and outgrew it. What this domain needs is
+    not a bag of remembered facts but three different kinds of lookup answered together, so I
+    built the layer myself.
+  </p>
+  <p>
+    A question like <em>&ldquo;what does CUSTOMER-ID affect?&rdquo;</em> fans out into three
+    retrievals before the model writes a word:
+  </p>
+  <div class="flow">
+    <span>question</span> <b>→</b>
+    <span>graph query (knowledge graph)</span> <b>+</b>
+    <span>semantic retrieval (vector DB)</span> <b>+</b>
+    <span>fetch source</span>
+    <b>→</b> <span>LLM synthesis</span>
+  </div>
+  <ul>
+    <li><strong>A knowledge graph</strong> holds the exact structure the parsers produced — which program reads which field, which job runs which program. This is where a dependency question gets an answer that is true rather than plausible.</li>
+    <li><strong>A vector store</strong> covers the semantic half: finding the relevant area when the question does not name an identifier the graph can key on.</li>
+    <li><strong>The source itself</strong> is fetched last, so the model reasons over real code rather than a summary of it.</li>
+  </ul>
+  <p>
+    Splitting it this way matters because the two halves fail differently. Graph traversal is
+    exact but only answers what was modelled; semantic search always returns something but can
+    return the wrong thing. Running both and letting the model synthesise gives an answer that is
+    grounded where precision exists and still useful where it does not. Scoped per project, the
+    layer also carries context between sessions — an engineer no longer re-explains which program
+    they are working on every time they come back, which cut repeat clarification questions by
+    about 75%.
+  </p>
+  <p>
+    The agent itself runs on LangGraph as a <code>retrieve → reason → tool call → answer</code>
+    loop, with a FastAPI backend.
+  </p>
+
+  <h2>Results</h2>
+  <table class="res">
+    <tr><th>Measure</th><th>How it was measured</th><th>Result</th></tr>
+    <tr>
+      <td>Ungrounded answers</td>
+      <td>10–20 question benchmark over the public AWS Mainframe Modernization CardDemo codebase</td>
+      <td>~50% → ~20%</td>
+    </tr>
+    <tr>
+      <td>Parse coverage</td>
+      <td>32 COBOL / 16 JCL reference set + ~3M LoC internal</td>
+      <td>100%, 0 unparsed</td>
+    </tr>
+    <tr>
+      <td>Field offset accuracy</td>
+      <td>CopyBook record layouts</td>
+      <td>0 byte/bit errors</td>
+    </tr>
+    <tr>
+      <td>Repeat clarification questions</td>
+      <td>Before/after the custom memory layer</td>
+      <td>~75% fewer</td>
+    </tr>
+    <tr>
+      <td>Flow diagram accuracy</td>
+      <td>Generated diagrams vs. real program flow</td>
+      <td>70–80%</td>
+    </tr>
+  </table>
+  <p>
+    Read the headline number either way: grounded answers rose from ~50% to ~80%, which is the
+    same as saying unsupported ones fell by about 60%. The agent served 5–6 engineers on the
+    account.
+  </p>
+  <p>
+    The flow-diagram figure is the honest one to look at. 70–80% is genuinely useful for
+    orientation and genuinely not safe to trust blindly — which is how it was presented to the
+    engineers using it.
+  </p>
+
+  <h2>Stack</h2>
+  <div class="tags">
+    <span class="tag">Python</span><span class="tag">ANTLR4</span><span class="tag">MCP</span>
+    <span class="tag">LangGraph</span><span class="tag">LangChain</span><span class="tag">FastAPI</span>
+    <span class="tag">Knowledge graph</span><span class="tag">Vector DB</span><span class="tag">RAG</span>
+    <span class="tag">COBOL / JCL / CopyBook</span><span class="tag">Docker</span>
+  </div>
+
+  <a class="backlink" href="../#work">← All projects</a>
+</article>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Bùi Henry</span>
+    <span><a href="https://mail.google.com/mail/?view=cm&amp;fs=1&amp;to=buihenry1404@gmail.com&amp;su=Opportunity%20for%20B%C3%B9i%20Henry" target="_blank" rel="noopener">buihenry1404@gmail.com</a></span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var rm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var els = document.querySelectorAll('.reveal');
+  if (!rm && 'IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { rootMargin: '0px 0px -10% 0px' });
+    els.forEach(function (el) { io.observe(el); });
+  } else {
+    els.forEach(function (el) { el.classList.add('in'); });
+  }
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A multi-agent SDLC platform · Bùi Henry</title>
+<meta name="description" content="Six SDLC agents and a 9-step workflow that turns a rough idea into requirements, design and a mockup — plus the Azure DevOps integration that puts it where developers work.">
+<meta property="og:title" content="A multi-agent SDLC platform · Bùi Henry">
+<meta property="og:description" content="Six SDLC agents and a 9-step workflow that turns a rough idea into requirements, design and a mockup — plus the Azure DevOps integration that puts it where developers work.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://buihenry1404.github.io/projects/sdlc-platform.html">
+<meta property="og:image" content="https://buihenry1404.github.io/assets/henry.jpg">
+<link rel="canonical" href="https://buihenry1404.github.io/projects/sdlc-platform.html">
+<link rel="alternate" hreflang="en" href="https://buihenry1404.github.io/projects/sdlc-platform.html">
+<link rel="alternate" hreflang="vi" href="https://buihenry1404.github.io/vi/projects/sdlc-platform.html">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%230B1120'/><text x='50' y='72' font-size='64' font-family='monospace' font-weight='bold' fill='%2322C55E' text-anchor='middle'>H</text></svg>">
+<link rel="stylesheet" href="../assets/style.css">
+<noscript><style>.reveal{opacity:1!important;transform:none!important}</style></noscript>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap nav__inner">
+    <a class="nav__home" href="../">~/buihenry</a>
+    <div class="nav__links">
+      <a href="../#work">Experience</a>
+      <a href="../#skills">Skills</a>
+      <a href="../#contact">Contact</a>
+      <span class="lang"><a href="../" hreflang="en" aria-current="true">EN</a><a href="../vi/projects/sdlc-platform.html" hreflang="vi">VI</a></span>
+    </div>
+  </div>
+</nav>
+
+<article class="wrap article">
+  <h1>Designing the agents inside an SDLC platform</h1>
+  <div class="article__meta">Internal developer platform · FPT Software · Apr 2026 – present</div>
+
+<p class="lead">
+    The platform runs multi-agent "swarms" across the software development lifecycle. I work on two
+    parts of it: the agents that produce the documents, and the Azure DevOps integration that
+    puts them in front of developers without asking anyone to change tools.
+  </p>
+
+  <h2>Part 1 — Making a document workflow finish</h2>
+  <p>
+    The SDLC swarm takes a rough product idea and walks it through requirements, specification,
+    design and a UI mockup, one agent per stage. When I picked it up, a run completed with the
+    full document set roughly <strong>half the time</strong>. The other half came out missing a
+    deliverable, or with a stage that produced something the next stage could not consume — and
+    somebody had to notice and run it again.
+  </p>
+  <p>
+    Failures clustered in a way that pointed at the workflow rather than the models: a stage
+    would produce prose where the next stage expected a named artefact, or would quietly skip an
+    output nobody had specified precisely enough to demand.
+  </p>
+
+  <h3>The redesign</h3>
+  <p>I rebuilt the workflow as <strong>9 explicit steps</strong>:</p>
+  <div class="flow">
+    <span>brainstorming gate</span> <b>→</b>
+    <span>PRD draft</span> <b>→</b>
+    <span>PRD</span> <b>→</b>
+    <span>SRS</span> <b>→</b>
+    <span>UX flow</span> <b>→</b>
+    <span>architecture (C4)</span> <b>→</b>
+    <span>API &amp; data</span> <b>→</b>
+    <span>mockup</span> <b>→</b>
+    <span>traceability matrix</span>
+  </div>
+  <p>Three changes did most of the work:</p>
+  <ul>
+    <li>
+      <strong>A brainstorming gate at the front.</strong> A vague idea produces vague
+      requirements, and every later stage inherits the vagueness. The first agent's job is to
+      interrogate the idea until there is something specific to specify.
+    </li>
+    <li>
+      <strong>A named, structured deliverable per step.</strong> Each stage emits a specific
+      artefact — <code>PRD.md</code>, <code>SRS.md</code>, a requirements traceability matrix
+      that later steps extend — so "did this step succeed" became checkable instead of a
+      judgement call.
+    </li>
+    <li>
+      <strong>Retry at the step level.</strong> When a stage produces an unusable deliverable,
+      that stage re-runs. Previously the whole run was discarded.
+    </li>
+  </ul>
+  <p>
+    I also pushed diagrams into the specification itself — story maps, C4 diagrams, sequence
+    diagrams, ERDs, state diagrams — because a diagram is a structural output an agent either
+    produces correctly or visibly fails to.
+  </p>
+
+  <h3>The agents</h3>
+  <p>
+    I built and reworked <strong>6 SDLC agents</strong>: brainstorming, requirements analysis,
+    architecture, UX design, UI mockup, and adversarial PRD review. For each one that meant a
+    persona and system prompt, the skills it can apply, and reference material that gives it
+    domain footing — C4 notation, NFR frameworks, SRS writing conventions, job stories,
+    adversarial validation checklists.
+  </p>
+  <div class="callout">
+    <p>
+      The reference material mattered more than prompt wording. An architecture agent told to
+      "produce a good architecture" writes generalities. The same agent given C4 syntax and a
+      concrete NFR framework produces something a human architect can argue with — which is the
+      actual goal.
+    </p>
+  </div>
+
+  <h3>Model routing</h3>
+  <p>
+    Every step originally ran on one global default model. That is wrong in both directions:
+    cheap models fail the reasoning-heavy stages, and expensive models are wasted on mechanical
+    ones. I shipped <strong>per-swarm and per-agent model pinning across four layers</strong> of
+    the stack — the Go CLI, the desktop app, the Next.js web UI and the Python orchestrator — so
+    each step runs on a model and reasoning-effort setting chosen for that step.
+  </p>
+
+  <h2>Part 2 — Putting agents where developers already are</h2>
+  <p>
+    An agent platform nobody opens is worth nothing. Developers live in Azure DevOps, so I built
+    the integration service that brings agents to them: a layered FastAPI application of
+    <strong>64 modules and 32 endpoints</strong> across 10 routers, with Supabase token auth and
+    an async Azure DevOps REST client.
+  </p>
+  <p>Two flows matter:</p>
+  <ul>
+    <li>
+      <strong>Assigning work by <code>@mention</code>.</strong> Mentioning the bot on a work
+      item turns the ticket into an agent job behind strict allow-list gates; the answer comes
+      back as a comment on the same work item. The developer never leaves the ticket.
+    </li>
+    <li>
+      <strong>Turning AI output into tracked work.</strong> A review report used to mean
+      hand-creating 5–8 work items. A parser maps findings onto work items via JSON-Patch, so
+      the same report becomes tracked tasks in one click — roughly <strong>85% less manual
+      effort</strong>.
+    </li>
+  </ul>
+  <p>
+    Jobs are dispatched to desktop workers, which claim them, run the agent and report back.
+    Because the same mention can arrive more than once — webhooks retry — the dispatch path is
+    built so a request executes exactly once regardless.
+  </p>
+
+  <h3>Security and deployment reach</h3>
+  <p>
+    Some customers require that everything stays entirely inside their own infrastructure. I
+    added support for <strong>self-hosted Azure DevOps Server</strong> alongside the cloud
+    version, so their work items and code references never leave their own network. Credentials
+    are redacted from logs and traces on both paths.
+  </p>
+
+  <h2>Results</h2>
+  <table class="res">
+    <tr><th>Measure</th><th>Result</th></tr>
+    <tr><td>Swarm runs delivering the full document set first try</td><td>~50% → ~80%</td></tr>
+    <tr><td>Agent jobs finishing without human intervention</td><td>~80%</td></tr>
+    <tr><td>Manual effort moving AI output into Azure DevOps</td><td>~85% less (5–8 steps → 1)</td></tr>
+    <tr><td>Customer data on customer infrastructure</td><td>on-prem supported</td></tr>
+  </table>
+  <p>
+    On a repository with 22 contributors I am the third-largest by commit count — the platform
+    is very much a team effort, and this page covers my part of it.
+  </p>
+
+  <h2>Stack</h2>
+  <div class="tags">
+    <span class="tag">Python</span><span class="tag">FastAPI</span><span class="tag">Redis</span>
+    <span class="tag">Supabase / PostgreSQL</span><span class="tag">TypeScript</span>
+    <span class="tag">React</span><span class="tag">Next.js</span><span class="tag">Go</span>
+    <span class="tag">Azure DevOps REST API</span><span class="tag">Docker</span>
+  </div>
+
+  <a class="backlink" href="../#work">← All projects</a>
+</article>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Bùi Henry</span>
+    <span><a href="https://mail.google.com/mail/?view=cm&amp;fs=1&amp;to=buihenry1404@gmail.com&amp;su=Opportunity%20for%20B%C3%B9i%20Henry" target="_blank" rel="noopener">buihenry1404@gmail.com</a></span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var rm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var els = document.querySelectorAll('.reveal');
+  if (!rm && 'IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { rootMargin: '0px 0px -10% 0px' });
+    els.forEach(function (el) { io.observe(el); });
+  } else {
+    els.forEach(function (el) { el.classList.add('in'); });
+  }
+
+})();
+</script>
+</body>
+</html>

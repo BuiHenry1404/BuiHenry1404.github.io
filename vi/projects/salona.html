@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Salona — agent đặt lịch không thể bịa ra lịch hẹn · Bùi Henry</title>
+<meta name="description" content="Mô hình được dùng 6 tool nhưng không tool nào ghi được lịch. Nó đề xuất khung giờ; code tất định mới ghi từ database. Lịch hẹn ảo không phải chuyện hiếm — nó là bất khả thi.">
+<meta property="og:title" content="Salona — agent đặt lịch không thể bịa ra lịch hẹn · Bùi Henry">
+<meta property="og:description" content="Mô hình được dùng 6 tool nhưng không tool nào ghi được lịch. Nó đề xuất khung giờ; code tất định mới ghi từ database. Lịch hẹn ảo không phải chuyện hiếm — nó là bất khả thi.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://buihenry1404.github.io/vi/projects/salona.html">
+<meta property="og:image" content="https://buihenry1404.github.io/assets/henry.jpg">
+<link rel="canonical" href="https://buihenry1404.github.io/vi/projects/salona.html">
+<link rel="alternate" hreflang="vi" href="https://buihenry1404.github.io/vi/projects/salona.html">
+<link rel="alternate" hreflang="en" href="https://buihenry1404.github.io/projects/salona.html">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%230B1120'/><text x='50' y='72' font-size='64' font-family='monospace' font-weight='bold' fill='%2322C55E' text-anchor='middle'>H</text></svg>">
+<link rel="stylesheet" href="../../assets/style.css">
+<noscript><style>.reveal{opacity:1!important;transform:none!important}</style></noscript>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap nav__inner">
+    <a class="nav__home" href="../">~/buihenry</a>
+    <div class="nav__links">
+      <a href="../#work">Kinh nghiệm</a>
+      <a href="../#skills">Kỹ năng</a>
+      <a href="../#contact">Liên hệ</a>
+      <span class="lang"><a href="../../projects/salona.html" hreflang="en">EN</a><a href="../" hreflang="vi" aria-current="true">VI</a></span>
+    </div>
+  </div>
+</nav>
+
+<article class="wrap article">
+  <h1>Agent đặt lịch không thể bịa ra lịch hẹn</h1>
+  <div class="article__meta">Salona Booking · Dự án cá nhân (2 người) · 08/2026 · <a href="https://github.com/BuiHenry1404/salona-booking">mã nguồn trên GitHub</a></div>
+
+  <p class="lead">
+    Một lễ tân AI cho tiệm nail &amp; tóc nhỏ. Khách chat để đặt lịch; chủ tiệm quản lý giờ rảnh
+    qua giao diện admin và bot Telegram. Điểm đáng nói nằm ở thứ mà mô hình <em>không</em> được
+    phép làm.
+  </p>
+
+  <h2>Vấn đề khi để mô hình tự đặt lịch</h2>
+  <p>
+    Trợ lý đặt lịch qua chat là demo ai cũng làm. Nó cũng là cách nhanh nhất để gây rắc rối ngoài
+    đời: mô hình xác nhận một khung giờ đã có người, bịa ra giờ chưa từng đề xuất, hoặc gắn lịch
+    hẹn cho nhầm khách. Viết prompt kỹ thì đỡ, nhưng không hết — câu &ldquo;đừng xác nhận khung
+    giờ đã kín&rdquo; chỉ là một lời dặn, không phải một bảo đảm.
+  </p>
+  <p>
+    Với chủ tiệm thì đây không phải chỉ số chất lượng trừu tượng. Đó là một người khách tới nơi
+    cho một lịch hẹn không tồn tại.
+  </p>
+
+  <h2>Cách giải: không cho mô hình quyền ghi</h2>
+  <p>
+    Agent chạy trên LangGraph, là một graph định tuyến 5 node. Mô hình được dùng 6 tool, và
+    <strong>không tool nào tạo được lịch hẹn</strong>.
+  </p>
+
+  <div class="flow">
+    <span>router</span> <b>→</b>
+    <span>booking agent</span> <b>/</b>
+    <span>status agent</span> <b>/</b>
+    <span>refuse</span>
+    <b>→</b> <span>confirm (không LLM)</span> <b>→</b> <span>database</span>
+  </div>
+
+  <p>
+    Booking agent tra được trạng thái tiệm, hiểu được cách khách nói về thời gian, tìm được khung
+    giờ trống và <em>đề xuất</em> một lịch hẹn. Đề xuất ở đây chỉ ghi tạm một bản nháp có hạn 10
+    phút, không hơn. Khi khách đồng ý, một <strong>node confirm không gọi LLM</strong> mới đọc
+    bản nháp đó và ghi lịch hẹn thật, lấy dữ liệu từ database.
+  </p>
+  <p>
+    Thông tin khách được gắn cứng vào tool ngay lúc khởi tạo, nên mô hình không có cách nào đổi
+    được người nhận lịch. Đặt nhầm khách không phải lỗi hiếm gặp — đơn giản là không có đường
+    code nào dẫn tới nó.
+  </p>
+
+  <div class="callout">
+    <p>
+      <strong>Nguyên tắc:</strong> guardrail viết trong prompt chỉ là lời dặn, guardrail nằm
+      trong kiến trúc mới là bảo đảm. Ở chỗ mà sai là mất tiền mất khách, nên để mô hình đề xuất
+      và để code quyết định ghi.
+    </p>
+  </div>
+
+  <h3>Bước xác nhận cũng là bước nhanh nhất</h3>
+  <p>
+    Vì xác nhận không gọi mô hình, nó phản hồi gần như tức thì — khoảng <strong>0 giây</strong>,
+    so với <strong>1,7–11 giây</strong> ở những lượt có gọi LLM, đo trên một phiên chat 10 lượt.
+    Bước an toàn nhất hoá ra cũng là bước nhanh nhất.
+  </p>
+
+  <h2>Bộ nhớ hội thoại</h2>
+  <p>
+    Mỗi lượt chat, agent chỉ được gửi cho mô hình khoảng <strong>1.500 token</strong>. Nhưng cuộc
+    trò chuyện thì cứ dài ra. Nên phải chia thứ cần nhớ làm ba loại, mỗi loại xử lý một kiểu.
+  </p>
+
+  <h3>1. Thông tin hiện tại — đọc lại từ database mỗi lượt</h3>
+  <p>
+    Khách là ai, xưng hô thế nào, tiệm bận tới mấy giờ, khách có lịch nào sắp tới. Những thứ này
+    không lấy từ lịch sử chat mà đọc thẳng từ database ở mỗi lượt. Mô hình không thể nhớ sai — vì
+    nó không nhớ, nó đọc.
+  </p>
+  <p>Mỗi dòng ở đây đều được thêm vào sau một lần hỏng thật:</p>
+  <ul>
+    <li>Không ghi hôm nay là ngày nào → khách nói <em>&ldquo;mai&rdquo;</em>, mô hình lấy ngày từ dữ liệu huấn luyện và đặt lịch lệch cả năm.</li>
+    <li>Không kèm id lịch hẹn → mô hình bịa ra một id để huỷ, huỷ hụt mà không ai biết.</li>
+    <li>Ghi <em>&ldquo;tiệm rảnh sau 30 phút&rdquo;</em> thay vì <em>&ldquo;rảnh lúc 15:30&rdquo;</em> → câu đó nằm lại trong lịch sử và sai vĩnh viễn.</li>
+    <li>Không chốt cách xưng hô → cùng một khách, lượt 3 gọi &ldquo;chú&rdquo;, lượt 5 gọi &ldquo;chị&rdquo;.</li>
+  </ul>
+
+  <h3>2. Vài lượt gần nhất — giữ nguyên văn</h3>
+  <p>
+    Đây là chỗ đang thương lượng, không nén được. Khách nói <em>&ldquo;giờ đó cũng được&rdquo;</em>
+    thì phải còn câu trước mới biết &ldquo;giờ đó&rdquo; là giờ nào.
+  </p>
+
+  <h3>3. Phần cũ hơn trong ngày — tóm tắt thành gạch đầu dòng</h3>
+  <p>
+    Khi phần cũ vượt ~800 token, một lượt chạy nền gộp nó thành tối đa 8 ý ngắn: khách muốn làm
+    gì, đã đề xuất giờ nào, khách nhận hay từ chối, còn gì chưa xong. <strong>Tin đã tóm tắt thì
+    không gửi nguyên văn nữa</strong> — nhờ vậy tổng luôn nằm trong 1.500 token dù trò chuyện dài
+    bao nhiêu.
+  </p>
+  <p>
+    Việc tóm tắt chạy nền nên khách không phải chờ. Hỏng 3 lần liên tiếp thì dừng tới hết ngày và
+    quay về dùng lịch sử thường — chậm hơn chút, không gãy.
+  </p>
+
+  <div class="callout">
+    <p>
+      Lịch sử những ngày trước thì bỏ hẳn. Ban đầu tôi có làm ký ức xuyên phiên rồi gỡ đi: với
+      chuyện đặt lịch, hội thoại hôm qua không giúp gì cho hôm nay, mà thứ gì còn quan trọng thì
+      đã nằm trong database rồi.
+    </p>
+  </div>
+
+  <h2>Phía chủ tiệm</h2>
+  <p>
+    Chủ tiệm dùng một bot Telegram với bàn phím bốn nút: xem lịch hôm nay, xem ngày mai, báo bận,
+    báo rảnh. Bot này <strong>không dùng LLM</strong>. Với một giao diện mà mọi thao tác chỉ là
+    một trong bốn lệnh biết trước, thêm mô hình ngôn ngữ vào chỉ tốn tiền, chậm hơn và có thêm
+    chỗ để hỏng, mà không được gì.
+  </p>
+  <p>
+    Mỗi lượt chạy của agent đều được ghi lại qua <strong>Langfuse tự dựng</strong>, nên độ trễ và
+    chi phí xem được theo từng lượt mà hội thoại của khách không phải rời khỏi máy chủ. Riêng
+    phần hiểu ngày giờ được tách thành một lời gọi LLM riêng, trả về dữ liệu có cấu trúc, mất
+    2,2–2,4 giây mỗi lần.
+  </p>
+
+  <h2>Kết quả</h2>
+  <table class="res">
+    <tr><th>Chỉ số</th><th>Kết quả</th></tr>
+    <tr><td>Lịch hẹn bịa ra hoặc gắn nhầm khách</td><td>0%, do kiến trúc</td></tr>
+    <tr><td>Độ trễ bước xác nhận</td><td>~0 s (so với 1,7–11 s ở lượt có LLM)</td></tr>
+    <tr><td>Hiểu ngày giờ khách nói</td><td>2,2–2,4 s, đo thật</td></tr>
+    <tr><td>Context mỗi lượt</td><td>tối đa 1.500 token</td></tr>
+    <tr><td>Chi phí token phía chủ tiệm</td><td>bằng 0 — bot Telegram không dùng LLM</td></tr>
+  </table>
+  <p>
+    Hệ thống đã xong tính năng và chạy được ở máy local kèm bộ test đầy đủ; chưa triển khai thật
+    tại tiệm.
+  </p>
+
+  <h2>Công nghệ</h2>
+  <div class="tags">
+    <span class="tag">Python</span><span class="tag">FastAPI</span><span class="tag">LangGraph</span>
+    <span class="tag">Azure OpenAI</span><span class="tag">MongoDB</span><span class="tag">React</span>
+    <span class="tag">TypeScript</span><span class="tag">Socket.IO</span>
+    <span class="tag">Telegram Bot API</span><span class="tag">Langfuse</span>
+    <span class="tag">Docker Compose</span><span class="tag">pytest / vitest</span>
+  </div>
+
+  <a class="backlink" href="../#work">← Tất cả dự án</a>
+</article>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Bùi Henry</span>
+    <span><a href="https://mail.google.com/mail/?view=cm&amp;fs=1&amp;to=buihenry1404@gmail.com&amp;su=Opportunity%20for%20B%C3%B9i%20Henry" target="_blank" rel="noopener">buihenry1404@gmail.com</a></span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var rm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var els = document.querySelectorAll('.reveal');
+  if (!rm && 'IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { rootMargin: '0px 0px -10% 0px' });
+    els.forEach(function (el) { io.observe(el); });
+  } else {
+    els.forEach(function (el) { el.classList.add('in'); });
+  }
+
+})();
+</script>
+</body>
+</html>

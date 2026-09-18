@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Benchmark retrieval cho coding agent · Bùi Henry</title>
+<meta name="description" content="Benchmark regex, code graph Tree-sitter và embedding search trên monorepo 3 triệu dòng. Cách rẻ nhất lại kém hơn ở đúng một điểm — và nói ra điểm đó mới là phần có giá trị.">
+<meta property="og:title" content="Benchmark retrieval cho coding agent · Bùi Henry">
+<meta property="og:description" content="Benchmark regex, code graph Tree-sitter và embedding search trên monorepo 3 triệu dòng. Cách rẻ nhất lại kém hơn ở đúng một điểm — và nói ra điểm đó mới là phần có giá trị.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://buihenry1404.github.io/vi/projects/code-retrieval.html">
+<meta property="og:image" content="https://buihenry1404.github.io/assets/henry.jpg">
+<link rel="canonical" href="https://buihenry1404.github.io/vi/projects/code-retrieval.html">
+<link rel="alternate" hreflang="vi" href="https://buihenry1404.github.io/vi/projects/code-retrieval.html">
+<link rel="alternate" hreflang="en" href="https://buihenry1404.github.io/projects/code-retrieval.html">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%230B1120'/><text x='50' y='72' font-size='64' font-family='monospace' font-weight='bold' fill='%2322C55E' text-anchor='middle'>H</text></svg>">
+<link rel="stylesheet" href="../../assets/style.css">
+<noscript><style>.reveal{opacity:1!important;transform:none!important}</style></noscript>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap nav__inner">
+    <a class="nav__home" href="../">~/buihenry</a>
+    <div class="nav__links">
+      <a href="../#work">Kinh nghiệm</a>
+      <a href="../#skills">Kỹ năng</a>
+      <a href="../#contact">Liên hệ</a>
+      <span class="lang"><a href="../../projects/code-retrieval.html" hreflang="en">EN</a><a href="../" hreflang="vi" aria-current="true">VI</a></span>
+    </div>
+  </div>
+</nav>
+
+<article class="wrap article">
+  <h1>Coding agent nên đọc gì, và cái đó tốn bao nhiêu</h1>
+  <div class="article__meta">Internal developer platform · FPT Software · 06 – 09/2026</div>
+
+  <p class="lead">
+    Tìm kiếm mã nguồn tưởng như là bài toán đã giải xong, cho tới khi người đi tìm là một LLM.
+    Agent không cần danh sách file, nó cần đúng vài trăm dòng — và mỗi dòng thừa đều là tiền và
+    thời gian chờ. Tôi benchmark ba cách lấy ra đúng vài trăm dòng đó.
+  </p>
+
+  <h2>Bài toán</h2>
+  <p>
+    Coding agent của nền tảng làm việc trên các codebase nội bộ rất lớn: 15–20 repository được
+    index, trong đó có một <strong>monorepo 3 triệu dòng</strong>. Chất lượng retrieval quyết
+    định mọi thứ phía sau. Lấy quá ít thì agent trả lời về đoạn mã nó chưa hề đọc; lấy quá nhiều
+    thì mỗi truy vấn vừa tốn tiền vừa chậm, mà chưa chắc đúng hơn.
+  </p>
+  <p>
+    Nhóm đang dùng code graph dựng bằng Tree-sitter — chính xác, nhưng truy vấn chậm ở quy mô
+    này. Việc của tôi là tìm xem có cách nào phục vụ agent tốt hơn không.
+  </p>
+
+  <h2>Cách benchmark</h2>
+  <p>Tôi so ba cách lấy context, chạy trên cùng một bộ truy vấn nội bộ cố định:</p>
+  <ul>
+    <li><strong>regex / grep</strong> — không index gì cả, chỉ khớp chuỗi.</li>
+    <li><strong>code graph Tree-sitter</strong> — parse mã thành đồ thị cấu trúc, truy vấn đi theo quan hệ symbol và lời gọi thật.</li>
+    <li><strong>embedding search (CodebaseMemory)</strong> — so độ tương đồng ngữ nghĩa trên mã đã chia chunk.</li>
+  </ul>
+  <p>Chấm trên ba tiêu chí, vì chỉ nhìn một tiêu chí là ra kết luận sai:</p>
+  <ul>
+    <li><strong>Độ trễ truy vấn</strong> — agent phải chờ bao lâu.</li>
+    <li><strong>Độ đúng luồng</strong> — đoạn mã trả về có thật sự nằm trên luồng chạy của chương trình không.</li>
+    <li><strong>Chi phí token</strong> — mỗi truy vấn gửi bao nhiêu context cho mô hình.</li>
+  </ul>
+
+  <h2>Kết quả</h2>
+  <p>
+    Embedding search thắng ở hai tiêu chí dễ đo nhất. Nó trả context nhanh hơn code graph nhiều
+    lần, và cắt được <strong>20–30% token context so với cách lấy file bằng regex</strong> — tiết
+    kiệm trực tiếp trên từng truy vấn, cộng dồn lại rất đáng kể ở quy mô 3 triệu dòng. Nhóm đưa
+    nó thành cách lấy context mặc định.
+  </p>
+
+  <div class="callout">
+    <p>
+      <strong>Nhưng nó kém hơn ở một điểm.</strong> Với việc fix bug trên code thật, embedding
+      search hay trả về đoạn mã <em>trông giống</em> câu trả lời đúng, chứ không phải đoạn mã
+      thật sự nằm trên luồng chạy. Code graph không bị vậy, vì nó đi theo cấu trúc chương trình
+      chứ không theo độ giống nhau về chữ nghĩa.
+    </p>
+  </div>
+
+  <p>
+    Điểm này rất dễ bỏ sót, mà bỏ sót thì trả giá đắt. Nếu chỉ đo tốc độ, báo cáo sẽ ghi một
+    chiến thắng rõ ràng, rồi âm thầm làm agent kém đi ở đúng việc người ta cần nó nhất. Nên đề
+    xuất của tôi không phải &ldquo;bỏ cái này lấy cái kia&rdquo; mà là <strong>dùng kết
+    hợp</strong>: code graph cho câu hỏi về phụ thuộc và luồng chạy, embedding cho tra cứu ngữ
+    nghĩa trên diện rộng.
+  </p>
+
+  <h2>Để về sau còn đo được</h2>
+  <p>
+    Thứ có giá trị lâu dài nhất ở đây không phải lựa chọn cuối cùng, mà là bộ khung đánh giá. Tôi
+    dựng một <strong>bộ truy vấn cố định kèm script chấm điểm</strong>, nhờ vậy mọi thay đổi về
+    retrieval sau này đều chạy trên cùng bộ truy vấn và cho ra một con số so được. Trước đó, ai
+    vừa thử xong thì người đó kết luận là tốt hay không.
+  </p>
+  <p>
+    Với retrieval thì điều này càng quan trọng, vì thay đổi ở đây gần như không cảm nhận được.
+    Chỉnh cách chia chunk hay đổi embedding model không làm gì khác đi rõ rệt, cho tới lúc có
+    người gặp đúng trường hợp bị hỏng.
+  </p>
+
+  <h2>Số liệu</h2>
+  <table class="res">
+    <tr><th>Chỉ số</th><th>Kết quả</th></tr>
+    <tr><td>Token context mỗi truy vấn (so với lấy file bằng regex)</td><td>−20–30%</td></tr>
+    <tr><td>Độ trễ truy vấn so với code graph Tree-sitter</td><td>nhanh hơn nhiều lần</td></tr>
+    <tr><td>Phạm vi benchmark</td><td>15–20 repo, có monorepo 3M dòng</td></tr>
+    <tr><td>Hạn chế đã ghi nhận rõ</td><td>lệch luồng khi fix bug</td></tr>
+    <tr><td>Bộ khung đánh giá</td><td>truy vấn cố định + script chấm</td></tr>
+  </table>
+
+  <h2>Công nghệ</h2>
+  <div class="tags">
+    <span class="tag">Python</span><span class="tag">Tree-sitter</span>
+    <span class="tag">CodebaseMemory</span><span class="tag">Embedding models</span>
+    <span class="tag">Vector DB</span><span class="tag">Hybrid search</span>
+    <span class="tag">RAG</span><span class="tag">Đo token / chi phí</span>
+  </div>
+
+  <a class="backlink" href="../#work">← Tất cả dự án</a>
+</article>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Bùi Henry</span>
+    <span><a href="https://mail.google.com/mail/?view=cm&amp;fs=1&amp;to=buihenry1404@gmail.com&amp;su=Opportunity%20for%20B%C3%B9i%20Henry" target="_blank" rel="noopener">buihenry1404@gmail.com</a></span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var rm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var els = document.querySelectorAll('.reveal');
+  if (!rm && 'IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { rootMargin: '0px 0px -10% 0px' });
+    els.forEach(function (el) { io.observe(el); });
+  } else {
+    els.forEach(function (el) { el.classList.add('in'); });
+  }
+
+})();
+</script>
+</body>
+</html>

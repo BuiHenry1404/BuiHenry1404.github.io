@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Salona — a booking agent that cannot invent a booking · Bùi Henry</title>
+<meta name="description" content="Six tools are exposed to the LLM and none of them can write a booking. It proposes a slot; deterministic code commits it from database state.">
+<meta property="og:title" content="Salona — a booking agent that cannot invent a booking · Bùi Henry">
+<meta property="og:description" content="Six tools are exposed to the LLM and none of them can write a booking. It proposes a slot; deterministic code commits it from database state.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://buihenry1404.github.io/projects/salona.html">
+<meta property="og:image" content="https://buihenry1404.github.io/assets/henry.jpg">
+<link rel="canonical" href="https://buihenry1404.github.io/projects/salona.html">
+<link rel="alternate" hreflang="en" href="https://buihenry1404.github.io/projects/salona.html">
+<link rel="alternate" hreflang="vi" href="https://buihenry1404.github.io/vi/projects/salona.html">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%230B1120'/><text x='50' y='72' font-size='64' font-family='monospace' font-weight='bold' fill='%2322C55E' text-anchor='middle'>H</text></svg>">
+<link rel="stylesheet" href="../assets/style.css">
+<noscript><style>.reveal{opacity:1!important;transform:none!important}</style></noscript>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap nav__inner">
+    <a class="nav__home" href="../">~/buihenry</a>
+    <div class="nav__links">
+      <a href="../#work">Experience</a>
+      <a href="../#skills">Skills</a>
+      <a href="../#contact">Contact</a>
+      <span class="lang"><a href="../" hreflang="en" aria-current="true">EN</a><a href="../vi/projects/salona.html" hreflang="vi">VI</a></span>
+    </div>
+  </div>
+</nav>
+
+<article class="wrap article">
+  <h1>A booking agent that cannot invent a booking</h1>
+  <div class="article__meta">Salona Booking · Personal project (2 people) · Aug 2026 ·
+    <a href="https://github.com/BuiHenry1404/salona-booking">source on GitHub</a></div>
+
+<p class="lead">
+    An AI receptionist for a small nail &amp; hair salon. Customers chat to book; the owner manages
+    availability from an admin UI and a Telegram bot. The interesting constraint is what the
+    model is <em>not</em> allowed to do.
+  </p>
+
+  <h2>The problem with letting a model book things</h2>
+  <p>
+    A chat booking assistant is a standard demo. It is also a standard way to create a real-world
+    mess: the model confirms a slot that was taken, invents a time that was never offered, or
+    attaches an appointment to the wrong customer. Prompting helps and does not solve it —
+    "never confirm an unavailable slot" is a request, not a guarantee.
+  </p>
+  <p>
+    For a salon owner this is not an abstract quality metric. It is a customer arriving for an
+    appointment that does not exist.
+  </p>
+
+  <h2>The design: take away the write tool</h2>
+  <p>
+    The agent runs on LangGraph as a five-node routed graph. Six tools are exposed to the model,
+    and <strong>none of them can create an appointment</strong>.
+  </p>
+
+  <div class="flow">
+    <span>router</span> <b>→</b>
+    <span>booking agent</span> <b>/</b>
+    <span>status agent</span> <b>/</b>
+    <span>refuse</span>
+    <b>→</b> <span>confirm (no LLM)</span> <b>→</b> <span>database</span>
+  </div>
+
+  <p>
+    The booking agent can look up shop status, parse a time expression, find free slots and
+    <em>propose</em> an appointment — a proposal writes a pending payload with a 10-minute
+    expiry, nothing more. When the customer says yes, a <strong>deterministic confirm node with
+    zero LLM calls</strong> reads that pending state and writes the appointment from database
+    values.
+  </p>
+  <p>
+    The customer's identity is bound in a closure when the tools are constructed, so the user id
+    is never an argument the model can influence. Booking for the wrong person is not a
+    low-probability failure — there is no code path that produces it.
+  </p>
+
+  <div class="callout">
+    <p>
+      <strong>The principle:</strong> a guardrail that lives in a prompt is a request. A
+      guardrail that lives in the architecture is a guarantee. Where the cost of being wrong is
+      real, the model should propose and deterministic code should commit.
+    </p>
+  </div>
+
+  <h3>The confirm step is also the fastest one</h3>
+  <p>
+    Because confirmation involves no model call, it returns in roughly <strong>0 seconds</strong>
+    against <strong>1.7–11 seconds</strong> for turns that do invoke the LLM — measured
+    end-to-end over a ten-turn session. The safest step is also the snappiest, which is a
+    pleasant way for an architectural decision to pay off twice.
+  </p>
+
+  <h2>Conversation memory</h2>
+  <p>
+    Each turn sends the model about <strong>1,500 tokens</strong>. But a conversation keeps
+    growing. So what the agent needs to remember is split into three kinds, each handled
+    differently.
+  </p>
+
+  <h3>1. Current facts — re-read from the database every turn</h3>
+  <p>
+    Who the customer is, how to address them, whether the owner is busy and until when, what
+    appointments they already have. None of this comes from the chat history; it is read straight
+    from the database on every turn. The model cannot remember it wrong, because it is not
+    remembering — it is reading.
+  </p>
+  <p>Every line here was added after something actually broke:</p>
+  <ul>
+    <li>Not stating today's date → the customer says <em>&ldquo;tomorrow&rdquo;</em>, the model takes today's date from its training data and books a year out.</li>
+    <li>Not including appointment ids → the model invented an id to cancel, and cancelled nothing.</li>
+    <li>Writing <em>&ldquo;free in 30 minutes&rdquo;</em> instead of <em>&ldquo;free at 3:30&rdquo;</em> → that sentence stays in the history and is wrong forever after.</li>
+    <li>Not fixing one form of address → the same customer got called two different things four turns apart.</li>
+  </ul>
+
+  <h3>2. The last few turns — kept word for word</h3>
+  <p>
+    This is where the negotiation is happening, so it cannot be compressed. When the customer
+    says <em>&ldquo;that time works&rdquo;</em>, you need the previous message to know which time.
+  </p>
+
+  <h3>3. Older messages from today — summarised into bullet points</h3>
+  <p>
+    Once the older part passes ~800 tokens, a background pass condenses it into at most eight
+    short facts: what service they want, which times were offered, whether they accepted, what is
+    still open. <strong>Anything already summarised is no longer sent word for word</strong> —
+    which is how the total stays under 1,500 tokens no matter how long the conversation runs.
+  </p>
+  <p>
+    The summarising runs in the background, so the customer never waits for it. If it fails three
+    times in a row it stops for the day and falls back to plain history — slower, not broken.
+  </p>
+
+  <div class="callout">
+    <p>
+      Earlier days are dropped entirely. I did build memory that carried across sessions, then
+      removed it: for salon bookings, yesterday's chat does not help today, and anything that
+      still matters is already in the database.
+    </p>
+  </div>
+
+  <h2>The owner's side</h2>
+  <p>
+    The salon owner gets a Telegram bot with a four-button keyboard — see today's bookings, see
+    tomorrow's, mark busy, mark free. It contains <strong>no LLM at all</strong>. For an
+    interface where every action is one of four known operations, a language model would add
+    cost, latency and a failure mode in exchange for nothing.
+  </p>
+  <p>
+    Every agent run is traced through a <strong>self-hosted Langfuse</strong> instance, so
+    latency and cost are observable per turn without customer conversations leaving the host.
+    Date and time parsing is isolated into its own LLM call returning structured output, which
+    runs in a measured 2.2–2.4 seconds.
+  </p>
+
+  <h2>Results</h2>
+  <table class="res">
+    <tr><th>Measure</th><th>Result</th></tr>
+    <tr><td>Hallucinated or mis-attributed bookings</td><td>0%, structurally</td></tr>
+    <tr><td>Confirmation latency</td><td>~0 s (vs 1.7–11 s for LLM turns)</td></tr>
+    <tr><td>Date/time parsing</td><td>2.2–2.4 s, measured</td></tr>
+    <tr><td>Context per turn</td><td>capped at 1,500 tokens</td></tr>
+    <tr><td>Owner-side token cost</td><td>zero — no LLM in the Telegram bot</td></tr>
+  </table>
+  <p>
+    The system is feature-complete and running locally with a full test suite; it has not been
+    deployed to the salon in production.
+  </p>
+
+  <h2>Stack</h2>
+  <div class="tags">
+    <span class="tag">Python</span><span class="tag">FastAPI</span><span class="tag">LangGraph</span>
+    <span class="tag">Azure OpenAI</span><span class="tag">MongoDB</span><span class="tag">React</span>
+    <span class="tag">TypeScript</span><span class="tag">Socket.IO</span>
+    <span class="tag">Telegram Bot API</span><span class="tag">Langfuse</span>
+    <span class="tag">Docker Compose</span><span class="tag">pytest / vitest</span>
+  </div>
+
+  <a class="backlink" href="../#work">← All projects</a>
+</article>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Bùi Henry</span>
+    <span><a href="https://mail.google.com/mail/?view=cm&amp;fs=1&amp;to=buihenry1404@gmail.com&amp;su=Opportunity%20for%20B%C3%B9i%20Henry" target="_blank" rel="noopener">buihenry1404@gmail.com</a></span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var rm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var els = document.querySelectorAll('.reveal');
+  if (!rm && 'IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { rootMargin: '0px 0px -10% 0px' });
+    els.forEach(function (el) { io.observe(el); });
+  } else {
+    els.forEach(function (el) { el.classList.add('in'); });
+  }
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Benchmarking retrieval for coding agents · Bùi Henry</title>
+<meta name="description" content="Benchmarked regex, a Tree-sitter code graph and embedding search over a 3M-line monorepo. The cheapest option was measurably worse at one thing — and saying so was the deliverable.">
+<meta property="og:title" content="Benchmarking retrieval for coding agents · Bùi Henry">
+<meta property="og:description" content="Benchmarked regex, a Tree-sitter code graph and embedding search over a 3M-line monorepo. The cheapest option was measurably worse at one thing — and saying so was the deliverable.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://buihenry1404.github.io/projects/code-retrieval.html">
+<meta property="og:image" content="https://buihenry1404.github.io/assets/henry.jpg">
+<link rel="canonical" href="https://buihenry1404.github.io/projects/code-retrieval.html">
+<link rel="alternate" hreflang="en" href="https://buihenry1404.github.io/projects/code-retrieval.html">
+<link rel="alternate" hreflang="vi" href="https://buihenry1404.github.io/vi/projects/code-retrieval.html">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%230B1120'/><text x='50' y='72' font-size='64' font-family='monospace' font-weight='bold' fill='%2322C55E' text-anchor='middle'>H</text></svg>">
+<link rel="stylesheet" href="../assets/style.css">
+<noscript><style>.reveal{opacity:1!important;transform:none!important}</style></noscript>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap nav__inner">
+    <a class="nav__home" href="../">~/buihenry</a>
+    <div class="nav__links">
+      <a href="../#work">Experience</a>
+      <a href="../#skills">Skills</a>
+      <a href="../#contact">Contact</a>
+      <span class="lang"><a href="../" hreflang="en" aria-current="true">EN</a><a href="../vi/projects/code-retrieval.html" hreflang="vi">VI</a></span>
+    </div>
+  </div>
+</nav>
+
+<article class="wrap article">
+  <h1>What a coding agent should read, and what that costs</h1>
+  <div class="article__meta">Internal developer platform · FPT Software · Jun – Sep 2026</div>
+
+<p class="lead">
+    Code search sounds like a solved problem until an LLM is the one searching. The agent does
+    not want a list of files, it wants the right few hundred lines — and every extra line is
+    money and latency. I benchmarked three ways of finding them.
+  </p>
+
+  <h2>The problem</h2>
+  <p>
+    The platform's coding agent works over large internal codebases: 15–20 repositories indexed,
+    one of them a <strong>3-million-line monorepo</strong>. Retrieval quality decides everything
+    downstream. Too little context and the agent answers about code it never saw; too much and
+    each query costs more and takes longer, without necessarily being more correct.
+  </p>
+  <p>
+    The team had a Tree-sitter code graph that was precise but slow to query at that scale. The
+    question was whether something else would serve the agent better.
+  </p>
+
+  <h2>The benchmark</h2>
+  <p>I compared three retrieval strategies on a fixed internal query set:</p>
+  <ul>
+    <li><strong>regex / grep</strong> — no index, pure text matching.</li>
+    <li><strong>Tree-sitter code graph</strong> — parses code into a structural graph; queries follow real symbol and call relationships.</li>
+    <li><strong>Embedding search (CodebaseMemory)</strong> — semantic similarity over chunked code.</li>
+  </ul>
+  <p>Scored on three axes, because optimising any one alone gives the wrong answer:</p>
+  <ul>
+    <li><strong>Query latency</strong> — how long the agent waits.</li>
+    <li><strong>Flow correctness</strong> — does the returned code reflect the program's actual control flow.</li>
+    <li><strong>Token cost</strong> — how much context is sent to the model per query.</li>
+  </ul>
+
+  <h2>What came out</h2>
+  <p>
+    Embedding search won on the two axes that get measured most easily. It returned context in a
+    fraction of the graph's query time, and cut context tokens sent to the agent by
+    <strong>20–30% compared with regex-based file retrieval</strong> — a direct, per-query saving
+    that compounds at 3M-LoC scale. We shipped it as the default retrieval path.
+  </p>
+
+  <div class="callout">
+    <p>
+      <strong>But it was worse at something.</strong> On real bug-fix tasks, semantic retrieval
+      drifts from the program's actual control flow — it returns code that reads like the right
+      answer rather than code that is on the execution path. The Tree-sitter graph stays exact
+      there, because it follows structure rather than similarity.
+    </p>
+  </div>
+
+  <p>
+    That distinction is easy to miss, and expensive to miss. A speed benchmark alone would have
+    reported a clean win and quietly degraded the agent on exactly the task people care about
+    most. So the recommendation was not "replace one with the other" but
+    <strong>hybrid retrieval</strong>: the graph for dependency and control-flow questions,
+    embeddings for broad semantic lookup.
+  </p>
+
+  <h2>Making it measurable afterwards</h2>
+  <p>
+    The most durable part of this work is not the choice, it is the harness. I built a
+    <strong>fixed evaluation set plus a scoring script</strong>, so any later change to
+    retrieval is compared against the same queries and produces a number. Before that, "is this
+    better?" was answered by whoever had most recently tried it.
+  </p>
+  <p>
+    That matters for retrieval in particular, because changes here are hard to feel. Tuning a
+    chunking strategy or swapping an embedding model produces no visible difference until
+    somebody hits the case it broke.
+  </p>
+
+  <h2>Results</h2>
+  <table class="res">
+    <tr><th>Measure</th><th>Result</th></tr>
+    <tr><td>Context tokens per query (vs. regex retrieval)</td><td>−20–30%</td></tr>
+    <tr><td>Query latency vs. Tree-sitter graph</td><td>several times faster</td></tr>
+    <tr><td>Scope benchmarked</td><td>15–20 repos, incl. 3M-LoC monorepo</td></tr>
+    <tr><td>Known limitation, documented</td><td>flow drift on bug-fix tasks</td></tr>
+    <tr><td>Evaluation harness</td><td>fixed query set + scoring script</td></tr>
+  </table>
+
+  <h2>Stack</h2>
+  <div class="tags">
+    <span class="tag">Python</span><span class="tag">Tree-sitter</span>
+    <span class="tag">CodebaseMemory</span><span class="tag">Embedding models</span>
+    <span class="tag">Vector DB</span><span class="tag">Hybrid search</span>
+    <span class="tag">RAG</span><span class="tag">Token / cost profiling</span>
+  </div>
+
+  <a class="backlink" href="../#work">← All projects</a>
+</article>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Bùi Henry</span>
+    <span><a href="https://mail.google.com/mail/?view=cm&amp;fs=1&amp;to=buihenry1404@gmail.com&amp;su=Opportunity%20for%20B%C3%B9i%20Henry" target="_blank" rel="noopener">buihenry1404@gmail.com</a></span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var rm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var els = document.querySelectorAll('.reveal');
+  if (!rm && 'IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { rootMargin: '0px 0px -10% 0px' });
+    els.forEach(function (el) { io.observe(el); });
+  } else {
+    els.forEach(function (el) { el.classList.add('in'); });
+  }
+
+})();
+</script>
+</body>
+</html>

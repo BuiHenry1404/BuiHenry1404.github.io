@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bùi Henry — AI Engineer</title>
+<meta name="description" content="AI Engineer building production LLM agents: grounding, retrieval, tool calling and guardrails. Python, FastAPI, LangGraph, MCP.">
+<meta property="og:title" content="Bùi Henry — AI Engineer">
+<meta property="og:description" content="AI Engineer building production LLM agents: grounding, retrieval, tool calling and guardrails. Python, FastAPI, LangGraph, MCP.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://buihenry1404.github.io">
+<meta property="og:image" content="https://buihenry1404.github.io/assets/henry.jpg">
+<link rel="canonical" href="https://buihenry1404.github.io">
+<link rel="alternate" hreflang="en" href="https://buihenry1404.github.io">
+<link rel="alternate" hreflang="vi" href="https://buihenry1404.github.io/vi">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%230B1120'/><text x='50' y='72' font-size='64' font-family='monospace' font-weight='bold' fill='%2322C55E' text-anchor='middle'>H</text></svg>">
+<link rel="stylesheet" href="assets/style.css">
+<noscript><style>.reveal{opacity:1!important;transform:none!important}</style></noscript>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap nav__inner">
+    <a class="nav__home" href="./">~/buihenry</a>
+    <div class="nav__links">
+      <a href="./#work">Experience</a>
+      <a href="./#skills">Skills</a>
+      <a href="./#contact">Contact</a>
+      <span class="lang"><a href="./" hreflang="en" aria-current="true">EN</a><a href="vi/" hreflang="vi">VI</a></span>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap hero__grid">
+    <div>
+      <h1>Bùi Henry</h1>
+      <div class="hero__role">AI ENGINEER</div>
+      <p class="hero__lede">I build LLM agents that hold up in production — grounded in real source code through parsers, retrieval and MCP tools, with guardrails that make wrong answers structurally impossible rather than merely discouraged.</p>
+      <div class="btns">
+        <a class="btn btn--primary" href="#work">See the work</a>
+        <a class="btn btn--ghost" href="#contact">Get in touch</a>
+      </div>
+    </div>
+    <picture>
+      <source srcset="assets/henry.webp" type="image/webp">
+      <img class="hero__photo" src="assets/henry.jpg" width="640" height="640" alt="Bùi Henry">
+    </picture>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="stats reveal">
+    <div class="stat">
+      <div class="stat__n">−60%</div>
+      <div class="stat__l">hallucinations on a COBOL maintenance agent</div>
+    </div>
+    <div class="stat">
+      <div class="stat__n">−20–30%</div>
+      <div class="stat__l">context tokens per code lookup</div>
+    </div>
+    <div class="stat">
+      <div class="stat__n">50→80%</div>
+      <div class="stat__l">first-try success of a 9-step agent workflow</div>
+    </div>
+    <div class="stat">
+      <div class="stat__n">1.5+ yrs</div>
+      <div class="stat__l">shipping agents at FPT Software</div>
+    </div>
+  </div>
+</div>
+
+<section id="work">
+  <div class="wrap">
+    <h2 class="h2" data-n="01.">Work experience</h2>
+    <p class="sub">Three projects at FPT Software, each with the design decision that mattered and the number it moved.</p>
+    <div class="cards">
+
+      <a class="card reveal" href="projects/sdlc-platform.html">
+        <div class="card__meta">FPT Software · Apr 2026 – present</div>
+        <div class="card__t">A multi-agent SDLC platform</div>
+        <p class="card__d">Six SDLC agents and a 9-step workflow that turns a rough idea into requirements, design and a mockup — plus the Azure DevOps integration that puts it where developers work.</p>
+        <div class="card__k">50% → 80% first-try success →</div>
+      </a>
+
+      <a class="card reveal" href="projects/code-retrieval.html">
+        <div class="card__meta">FPT Software · Jun – Sep 2026</div>
+        <div class="card__t">Retrieval for coding agents</div>
+        <p class="card__d">Benchmarked regex, a Tree-sitter code graph and embedding search over a 3M-line monorepo. The winner was cheaper — and measurably worse at one thing.</p>
+        <div class="card__k">−20–30% token cost →</div>
+      </a>
+
+      <a class="card reveal" href="projects/mainframe-agent.html">
+        <div class="card__meta">FPT Software · Nov 2025 – Apr 2026</div>
+        <div class="card__t">Grounding an agent in COBOL</div>
+        <p class="card__d">ANTLR4 parsers turn COBOL/JCL/CopyBook into structured JSON; MCP tools let the LLM query real dependencies instead of guessing.</p>
+        <div class="card__k">−60% hallucinations →</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section id="personal">
+  <div class="wrap">
+    <h2 class="h2" data-n="02.">Personal project</h2>
+    <p class="sub">Built end to end, outside work.</p>
+    <div class="cards">
+
+      <a class="card reveal" href="projects/salona.html">
+        <div class="card__meta">Personal · Aug 2026</div>
+        <div class="card__t">A booking agent with an architectural guardrail</div>
+        <p class="card__d">The agent calls six tools to find open slots, but the write path is out of its reach — a deterministic node commits from the database.</p>
+        <div class="card__k">0% wrong bookings, by design →</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section id="skills">
+  <div class="wrap">
+    <h2 class="h2" data-n="03.">Skills</h2>
+    <p class="sub">What I reach for, roughly in order of how much I use it.</p>
+    <div class="skills">
+      <div class="skill">
+        <div class="skill__k">AI / LLM</div>
+        <div class="skill__v">LangGraph, LangChain, AutoGen · multi-agent orchestration · tool calling · MCP (Model Context Protocol) · RAG, retrieval &amp; embedding search · long-term agent memory (knowledge graph + vector retrieval) · prompt &amp; context engineering · structured output · guardrails · LLM evaluation · Azure OpenAI · Langfuse</div>
+      </div>
+      <div class="skill">
+        <div class="skill__k">Backend</div>
+        <div class="skill__v">Python · FastAPI · REST APIs · Socket.IO · Redis · PostgreSQL / Supabase · MongoDB · graph &amp; vector databases · Docker</div>
+      </div>
+      <div class="skill">
+        <div class="skill__k">Parsing / tooling</div>
+        <div class="skill__v">ANTLR4 (grammars, AST) · Tree-sitter · Azure DevOps REST API · Git · pytest · reading-level COBOL / JCL / CopyBook — enough to write parsers for them, not to write production programs in them</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="wrap">
+    <h2 class="h2" data-n="04.">Get in touch</h2>
+    <p class="sub">Open to AI Engineer roles in Ho Chi Minh City or remote.</p>
+    <div class="btns">
+      <a class="btn btn--primary" href="https://mail.google.com/mail/?view=cm&amp;fs=1&amp;to=buihenry1404@gmail.com&amp;su=Opportunity%20for%20B%C3%B9i%20Henry" target="_blank" rel="noopener">buihenry1404@gmail.com</a>
+      <a class="btn btn--ghost" href="https://github.com/BuiHenry1404" rel="me">GitHub</a>
+      <a class="btn btn--ghost" href="https://www.linkedin.com/in/b%C3%B9i-henry-936290297/" rel="me">LinkedIn</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Bùi Henry</span>
+    <span><a href="https://mail.google.com/mail/?view=cm&amp;fs=1&amp;to=buihenry1404@gmail.com&amp;su=Opportunity%20for%20B%C3%B9i%20Henry" target="_blank" rel="noopener">buihenry1404@gmail.com</a></span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var rm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var els = document.querySelectorAll('.reveal');
+  if (!rm && 'IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { rootMargin: '0px 0px -10% 0px' });
+    els.forEach(function (el) { io.observe(el); });
+  } else {
+    els.forEach(function (el) { el.classList.add('in'); });
+  }
+
+})();
+</script>
+</body>
+</html>

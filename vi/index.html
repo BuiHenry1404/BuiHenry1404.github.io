@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bùi Henry — AI Engineer</title>
+<meta name="description" content="AI Engineer xây dựng LLM agent chạy production: grounding, retrieval, tool calling và guardrail. Python, FastAPI, LangGraph, MCP.">
+<meta property="og:title" content="Bùi Henry — AI Engineer">
+<meta property="og:description" content="AI Engineer xây dựng LLM agent chạy production: grounding, retrieval, tool calling và guardrail. Python, FastAPI, LangGraph, MCP.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://buihenry1404.github.io/vi">
+<meta property="og:image" content="https://buihenry1404.github.io/assets/henry.jpg">
+<link rel="canonical" href="https://buihenry1404.github.io/vi">
+<link rel="alternate" hreflang="vi" href="https://buihenry1404.github.io/vi">
+<link rel="alternate" hreflang="en" href="https://buihenry1404.github.io">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%230B1120'/><text x='50' y='72' font-size='64' font-family='monospace' font-weight='bold' fill='%2322C55E' text-anchor='middle'>H</text></svg>">
+<link rel="stylesheet" href="../assets/style.css">
+<noscript><style>.reveal{opacity:1!important;transform:none!important}</style></noscript>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap nav__inner">
+    <a class="nav__home" href="./">~/buihenry</a>
+    <div class="nav__links">
+      <a href="./#work">Kinh nghiệm</a>
+      <a href="./#skills">Kỹ năng</a>
+      <a href="./#contact">Liên hệ</a>
+      <span class="lang"><a href="../" hreflang="en">EN</a><a href="./" hreflang="vi" aria-current="true">VI</a></span>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap hero__grid">
+    <div>
+      <h1>Bùi Henry</h1>
+      <div class="hero__role">AI ENGINEER</div>
+      <p class="hero__lede">Tôi xây LLM agent dùng được thật trong production — bám vào source code thực tế qua parser, retrieval và MCP tool, với guardrail khiến câu trả lời sai là bất khả thi về kiến trúc, chứ không chỉ được prompt khuyên ngăn.</p>
+      <div class="btns">
+        <a class="btn btn--primary" href="#work">Xem dự án</a>
+        <a class="btn btn--ghost" href="#contact">Liên hệ</a>
+      </div>
+    </div>
+    <picture>
+      <source srcset="../assets/henry.webp" type="image/webp">
+      <img class="hero__photo" src="../assets/henry.jpg" width="640" height="640" alt="Bùi Henry">
+    </picture>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="stats reveal">
+    <div class="stat">
+      <div class="stat__n">−60%</div>
+      <div class="stat__l">hallucination của agent hỗ trợ COBOL</div>
+    </div>
+    <div class="stat">
+      <div class="stat__n">−20–30%</div>
+      <div class="stat__l">token context mỗi lần tra code</div>
+    </div>
+    <div class="stat">
+      <div class="stat__n">50→80%</div>
+      <div class="stat__l">thành công ngay lần đầu của workflow 9 bước</div>
+    </div>
+    <div class="stat">
+      <div class="stat__n">1,5+ năm</div>
+      <div class="stat__l">xây agent production tại FPT Software</div>
+    </div>
+  </div>
+</div>
+
+<section id="work">
+  <div class="wrap">
+    <h2 class="h2" data-n="01.">Kinh nghiệm làm việc</h2>
+    <p class="sub">Ba dự án tại FPT Software, mỗi dự án kèm quyết định thiết kế quan trọng nhất và con số nó thay đổi.</p>
+    <div class="cards">
+
+      <a class="card reveal" href="projects/sdlc-platform.html">
+        <div class="card__meta">FPT Software · 04/2026 – nay</div>
+        <div class="card__t">Nền tảng SDLC đa agent</div>
+        <p class="card__d">Sáu agent SDLC và quy trình 9 bước biến một ý tưởng thô thành yêu cầu, thiết kế và mockup — cùng phần tích hợp Azure DevOps đưa nó tới đúng nơi developer làm việc.</p>
+        <div class="card__k">50% → 80% thành công lần đầu →</div>
+      </a>
+
+      <a class="card reveal" href="projects/code-retrieval.html">
+        <div class="card__meta">FPT Software · 06 – 09/2026</div>
+        <div class="card__t">Retrieval cho coding agent</div>
+        <p class="card__d">Benchmark regex, code graph Tree-sitter và embedding search trên monorepo 3 triệu dòng. Phương án thắng rẻ hơn — và kém hơn ở đúng một việc.</p>
+        <div class="card__k">−20–30% chi phí token →</div>
+      </a>
+
+      <a class="card reveal" href="projects/mainframe-agent.html">
+        <div class="card__meta">FPT Software · 11/2025 – 04/2026</div>
+        <div class="card__t">Agent trả lời từ mã COBOL thật</div>
+        <p class="card__d">Parser ANTLR4 chuyển COBOL/JCL/CopyBook thành JSON có cấu trúc; MCP tool cho LLM tra phụ thuộc thật thay vì đoán.</p>
+        <div class="card__k">−60% hallucination →</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section id="personal">
+  <div class="wrap">
+    <h2 class="h2" data-n="02.">Dự án cá nhân</h2>
+    <p class="sub">Tự làm từ đầu tới cuối, ngoài giờ làm.</p>
+    <div class="cards">
+
+      <a class="card reveal" href="projects/salona.html">
+        <div class="card__meta">Cá nhân · 08/2026</div>
+        <div class="card__t">Agent đặt lịch có guardrail kiến trúc</div>
+        <p class="card__d">Agent gọi sáu tool để tìm khung giờ trống, nhưng đường ghi dữ liệu nằm ngoài tầm với của nó — một node tất định mới commit từ database.</p>
+        <div class="card__k">0% đặt sai, theo thiết kế →</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section id="skills">
+  <div class="wrap">
+    <h2 class="h2" data-n="03.">Kỹ năng</h2>
+    <p class="sub">Những thứ tôi dùng, xếp gần theo tần suất.</p>
+    <div class="skills">
+      <div class="skill">
+        <div class="skill__k">AI / LLM</div>
+        <div class="skill__v">LangGraph, LangChain, AutoGen · điều phối multi-agent · tool calling · MCP (Model Context Protocol) · RAG, retrieval &amp; embedding search · bộ nhớ dài hạn cho agent (knowledge graph + vector retrieval) · prompt &amp; context engineering · structured output · guardrail · đánh giá LLM · Azure OpenAI · Langfuse</div>
+      </div>
+      <div class="skill">
+        <div class="skill__k">Backend</div>
+        <div class="skill__v">Python · FastAPI · REST API · Socket.IO · Redis · PostgreSQL / Supabase · MongoDB · graph &amp; vector databases · Docker</div>
+      </div>
+      <div class="skill">
+        <div class="skill__k">Parsing / công cụ</div>
+        <div class="skill__v">ANTLR4 (grammar, AST) · Tree-sitter · Azure DevOps REST API · Git · pytest · COBOL / JCL / CopyBook ở mức đọc hiểu — đủ để viết parser cho chúng, không phải để viết chương trình production</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="wrap">
+    <h2 class="h2" data-n="04.">Liên hệ</h2>
+    <p class="sub">Đang tìm vị trí AI Engineer tại TP.HCM hoặc remote.</p>
+    <div class="btns">
+      <a class="btn btn--primary" href="https://mail.google.com/mail/?view=cm&amp;fs=1&amp;to=buihenry1404@gmail.com&amp;su=Opportunity%20for%20B%C3%B9i%20Henry" target="_blank" rel="noopener">buihenry1404@gmail.com</a>
+      <a class="btn btn--ghost" href="https://github.com/BuiHenry1404" rel="me">GitHub</a>
+      <a class="btn btn--ghost" href="https://www.linkedin.com/in/b%C3%B9i-henry-936290297/" rel="me">LinkedIn</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Bùi Henry</span>
+    <span><a href="https://mail.google.com/mail/?view=cm&amp;fs=1&amp;to=buihenry1404@gmail.com&amp;su=Opportunity%20for%20B%C3%B9i%20Henry" target="_blank" rel="noopener">buihenry1404@gmail.com</a></span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var rm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var els = document.querySelectorAll('.reveal');
+  if (!rm && 'IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { rootMargin: '0px 0px -10% 0px' });
+    els.forEach(function (el) { io.observe(el); });
+  } else {
+    els.forEach(function (el) { el.classList.add('in'); });
+  }
+
+})();
+</script>
+</body>
+</html>

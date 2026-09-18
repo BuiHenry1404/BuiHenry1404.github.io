@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nền tảng SDLC đa agent · Bùi Henry</title>
+<meta name="description" content="Sáu agent SDLC và quy trình 9 bước biến ý tưởng thô thành yêu cầu, thiết kế và mockup — cùng phần tích hợp Azure DevOps đưa nó vào đúng chỗ developer làm việc.">
+<meta property="og:title" content="Nền tảng SDLC đa agent · Bùi Henry">
+<meta property="og:description" content="Sáu agent SDLC và quy trình 9 bước biến ý tưởng thô thành yêu cầu, thiết kế và mockup — cùng phần tích hợp Azure DevOps đưa nó vào đúng chỗ developer làm việc.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://buihenry1404.github.io/vi/projects/sdlc-platform.html">
+<meta property="og:image" content="https://buihenry1404.github.io/assets/henry.jpg">
+<link rel="canonical" href="https://buihenry1404.github.io/vi/projects/sdlc-platform.html">
+<link rel="alternate" hreflang="vi" href="https://buihenry1404.github.io/vi/projects/sdlc-platform.html">
+<link rel="alternate" hreflang="en" href="https://buihenry1404.github.io/projects/sdlc-platform.html">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%230B1120'/><text x='50' y='72' font-size='64' font-family='monospace' font-weight='bold' fill='%2322C55E' text-anchor='middle'>H</text></svg>">
+<link rel="stylesheet" href="../../assets/style.css">
+<noscript><style>.reveal{opacity:1!important;transform:none!important}</style></noscript>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap nav__inner">
+    <a class="nav__home" href="../">~/buihenry</a>
+    <div class="nav__links">
+      <a href="../#work">Kinh nghiệm</a>
+      <a href="../#skills">Kỹ năng</a>
+      <a href="../#contact">Liên hệ</a>
+      <span class="lang"><a href="../../projects/sdlc-platform.html" hreflang="en">EN</a><a href="../" hreflang="vi" aria-current="true">VI</a></span>
+    </div>
+  </div>
+</nav>
+
+<article class="wrap article">
+  <h1>Thiết kế các agent bên trong một nền tảng SDLC</h1>
+  <div class="article__meta">Internal developer platform · FPT Software · 04/2026 – nay</div>
+
+  <p class="lead">
+    Nền tảng chạy các &ldquo;swarm&rdquo; đa agent xuyên suốt vòng đời phát triển phần mềm. Tôi
+    làm hai phần: nhóm agent sinh ra tài liệu, và phần tích hợp Azure DevOps để developer dùng
+    được chúng ngay trong công cụ họ vốn đã làm việc hằng ngày.
+  </p>
+
+  <h2>Phần 1 — Làm cho một quy trình sinh tài liệu chạy tới đích</h2>
+  <p>
+    Swarm SDLC nhận một ý tưởng sản phẩm còn thô rồi đưa nó lần lượt qua yêu cầu, đặc tả, thiết
+    kế và mockup giao diện, mỗi giai đoạn do một agent phụ trách. Khi tôi nhận phần này, chỉ
+    <strong>khoảng một nửa số lần chạy</strong> cho ra đủ bộ tài liệu. Nửa còn lại thiếu file,
+    hoặc có giai đoạn tạo ra thứ mà giai đoạn sau không dùng được — và phải có người phát hiện
+    rồi chạy lại từ đầu.
+  </p>
+  <p>
+    Nhìn vào các lần hỏng thì thấy nguyên nhân nằm ở quy trình chứ không phải ở mô hình: có giai
+    đoạn trả về một đoạn mô tả dài dòng trong khi giai đoạn sau cần một file cụ thể, có giai đoạn
+    bỏ qua hẳn một đầu ra vì chưa ai quy định rõ nó phải có.
+  </p>
+
+  <h3>Thiết kế lại</h3>
+  <p>Tôi dựng lại quy trình thành <strong>9 bước rõ ràng</strong>:</p>
+  <div class="flow">
+    <span>brainstorming gate</span> <b>→</b>
+    <span>PRD nháp</span> <b>→</b>
+    <span>PRD</span> <b>→</b>
+    <span>SRS</span> <b>→</b>
+    <span>UX flow</span> <b>→</b>
+    <span>kiến trúc (C4)</span> <b>→</b>
+    <span>API &amp; dữ liệu</span> <b>→</b>
+    <span>mockup</span> <b>→</b>
+    <span>ma trận truy vết</span>
+  </div>
+  <p>Ba thay đổi tạo ra phần lớn khác biệt:</p>
+  <ul>
+    <li>
+      <strong>Thêm một bước brainstorming ở đầu.</strong> Ý tưởng mơ hồ thì yêu cầu viết ra cũng
+      mơ hồ, và mọi bước sau đều kém theo. Việc của agent đầu tiên là hỏi vặn ý tưởng cho tới khi
+      có thứ đủ cụ thể để đặc tả.
+    </li>
+    <li>
+      <strong>Mỗi bước phải cho ra một file cụ thể, có cấu trúc.</strong> Từng giai đoạn sinh ra
+      một tài liệu xác định — <code>PRD.md</code>, <code>SRS.md</code>, một ma trận truy vết yêu
+      cầu mà các bước sau bổ sung dần — nhờ vậy câu hỏi &ldquo;bước này xong chưa&rdquo; kiểm tra
+      được bằng máy, không còn phụ thuộc cảm tính.
+    </li>
+    <li>
+      <strong>Cho chạy lại theo từng bước.</strong> Bước nào cho ra kết quả không dùng được thì
+      chỉ chạy lại bước đó. Trước đây hỏng một bước là bỏ cả lượt.
+    </li>
+  </ul>
+  <p>
+    Tôi cũng đưa sơ đồ vào thẳng bản đặc tả — story map, sơ đồ C4, sequence diagram, ERD, state
+    diagram. Sơ đồ là loại đầu ra mà agent hoặc vẽ đúng, hoặc hỏng thấy được ngay, nên nó tự trở
+    thành một phép kiểm tra.
+  </p>
+
+  <h3>Các agent</h3>
+  <p>
+    Tôi xây mới và chỉnh lại <strong>6 agent SDLC</strong>: brainstorming, phân tích yêu cầu,
+    kiến trúc, thiết kế UX, mockup giao diện, và review PRD theo hướng phản biện. Với mỗi agent,
+    việc đó gồm viết persona và system prompt, xác định các skill nó được phép dùng, và soạn tài
+    liệu tham chiếu để nó có nền chuyên môn — ký pháp C4, framework NFR, quy ước viết SRS, job
+    story, checklist phản biện.
+  </p>
+  <div class="callout">
+    <p>
+      Tài liệu tham chiếu quan trọng hơn cách viết prompt. Một agent kiến trúc chỉ được dặn
+      &ldquo;hãy đưa ra kiến trúc tốt&rdquo; sẽ viết toàn điều chung chung. Cũng agent đó, khi
+      được cấp ký pháp C4 và một framework NFR cụ thể, sẽ cho ra bản thiết kế mà một kiến trúc sư
+      thật có thể ngồi xuống tranh luận — đó mới là thứ cần.
+    </p>
+  </div>
+
+  <h3>Model routing</h3>
+  <p>
+    Ban đầu mọi bước đều chạy trên cùng một model mặc định. Cách đó sai theo cả hai hướng: model
+    rẻ thì đuối ở những bước cần suy luận nhiều, còn model đắt thì phí ở những bước máy móc. Tôi
+    làm phần <strong>chọn model theo từng swarm và từng agent</strong>, chạy thông suốt qua bốn
+    tầng của hệ thống — Go CLI, ứng dụng desktop, web UI Next.js và orchestrator Python — nên mỗi
+    bước dùng đúng model và mức reasoning hợp với nó.
+  </p>
+
+  <h2>Phần 2 — Đưa agent vào đúng chỗ developer đang làm việc</h2>
+  <p>
+    Một nền tảng agent mà không ai mở ra dùng thì vô nghĩa. Developer làm việc cả ngày trong Azure
+    DevOps, nên tôi xây service tích hợp để mang agent vào đó: một ứng dụng FastAPI phân tầng gồm
+    <strong>64 module và 32 endpoint</strong> trải trên 10 router, xác thực token qua Supabase và
+    một Azure DevOps REST client bất đồng bộ.
+  </p>
+  <p>Hai luồng chính:</p>
+  <ul>
+    <li>
+      <strong>Giao việc bằng <code>@mention</code>.</strong> Mention bot trong một work item là
+      ticket đó trở thành job cho agent, đi qua các cổng allow-list nghiêm ngặt; kết quả trả về
+      dưới dạng comment ngay trên work item đó. Developer không phải rời khỏi ticket.
+    </li>
+    <li>
+      <strong>Biến kết quả AI thành công việc theo dõi được.</strong> Một báo cáo review trước
+      đây phải ngồi tạo tay 5–8 work item. Tôi viết parser ánh xạ từng finding thành work item
+      qua JSON-Patch, nên cùng báo cáo đó giờ thành task chỉ với một cú nhấp — giảm khoảng
+      <strong>85% thao tác thủ công</strong>.
+    </li>
+  </ul>
+  <p>
+    Job được đẩy xuống cho worker chạy trên máy developer nhận về, chạy agent rồi báo kết quả
+    ngược lên. Vì cùng một mention có thể tới nhiều lần — webhook của Azure DevOps sẽ gửi lại khi
+    nghi ngờ gửi hỏng — nên luồng này được thiết kế để mỗi yêu cầu chỉ chạy đúng một lần.
+  </p>
+
+  <h3>Bảo mật và phạm vi triển khai</h3>
+  <p>
+    Có khách hàng yêu cầu mọi thông tin phải nằm hoàn toàn trong hạ tầng nội bộ của họ. Tôi bổ
+    sung hỗ trợ <strong>Azure DevOps Server tự host</strong> bên cạnh bản cloud, để work item và
+    mã nguồn của họ không rời khỏi mạng nội bộ. Credential thì được che khỏi log và trace ở cả
+    hai kiểu kết nối.
+  </p>
+
+  <h2>Kết quả</h2>
+  <table class="res">
+    <tr><th>Chỉ số</th><th>Kết quả</th></tr>
+    <tr><td>Lượt chạy swarm ra đủ bộ tài liệu ngay lần đầu</td><td>~50% → ~80%</td></tr>
+    <tr><td>Agent job chạy xong không cần người can thiệp</td><td>~80%</td></tr>
+    <tr><td>Thao tác tay để đưa kết quả AI vào Azure DevOps</td><td>giảm ~85% (5–8 bước → 1)</td></tr>
+    <tr><td>Dữ liệu khách nằm trên hạ tầng của khách</td><td>hỗ trợ on-prem</td></tr>
+  </table>
+  <p>
+    Repository này có 22 người đóng góp và tôi đứng thứ ba về số commit — đây là sản phẩm của cả
+    nhóm, trang này chỉ nói về phần việc của tôi.
+  </p>
+
+  <h2>Công nghệ</h2>
+  <div class="tags">
+    <span class="tag">Python</span><span class="tag">FastAPI</span><span class="tag">Redis</span>
+    <span class="tag">Supabase / PostgreSQL</span><span class="tag">TypeScript</span>
+    <span class="tag">React</span><span class="tag">Next.js</span><span class="tag">Go</span>
+    <span class="tag">Azure DevOps REST API</span><span class="tag">Docker</span>
+  </div>
+
+  <a class="backlink" href="../#work">← Tất cả dự án</a>
+</article>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Bùi Henry</span>
+    <span><a href="https://mail.google.com/mail/?view=cm&amp;fs=1&amp;to=buihenry1404@gmail.com&amp;su=Opportunity%20for%20B%C3%B9i%20Henry" target="_blank" rel="noopener">buihenry1404@gmail.com</a></span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var rm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var els = document.querySelectorAll('.reveal');
+  if (!rm && 'IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { rootMargin: '0px 0px -10% 0px' });
+    els.forEach(function (el) { io.observe(el); });
+  } else {
+    els.forEach(function (el) { el.classList.add('in'); });
+  }
+
+})();
+</script>
+</body>
+</html>
