@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Salona — a booking agent that cannot invent a booking · Bùi Henry</title>
-<meta name="description" content="Six tools are exposed to the LLM and none of them can write a booking. It proposes a slot; deterministic code commits it from database state.">
+<meta name="description" content="Seven tools are exposed to the LLM and none of them can write a booking. It proposes a slot; deterministic code commits it, and every reply is checked in code before it is sent.">
 <meta property="og:title" content="Salona — a booking agent that cannot invent a booking · Bùi Henry">
-<meta property="og:description" content="Six tools are exposed to the LLM and none of them can write a booking. It proposes a slot; deterministic code commits it from database state.">
+<meta property="og:description" content="Seven tools are exposed to the LLM and none of them can write a booking. It proposes a slot; deterministic code commits it, and every reply is checked in code before it is sent.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://buihenry1404.github.io/projects/salona.html">
 <meta property="og:image" content="https://buihenry1404.github.io/assets/henry.jpg">
@@ -56,24 +56,33 @@
 
   <h2>The design: take away the write tool</h2>
   <p>
-    The agent runs on LangGraph as a five-node routed graph. Six tools are exposed to the model,
-    and <strong>none of them can create an appointment</strong>.
+    The agent runs on LangGraph: a supervisor routes each message to one of three specialist
+    agents (booking, shop info, small talk). The booking agent has seven tools, and
+    <strong>none of them can create an appointment</strong>.
   </p>
 
   <div class="flow">
-    <span>router</span> <b>→</b>
-    <span>booking agent</span> <b>/</b>
-    <span>status agent</span> <b>/</b>
-    <span>refuse</span>
-    <b>→</b> <span>confirm (no LLM)</span> <b>→</b> <span>database</span>
+    <span>supervisor</span> <b>→</b>
+    <span>booking</span> <b>/</b>
+    <span>shop</span> <b>/</b>
+    <span>social</span>
+    <b>→</b> <span>guard (no LLM)</span> <b>→</b> <span>customer</span>
+  </div>
+  <div class="flow">
+    <span>customer says yes</span> <b>→</b>
+    <span>confirm (no LLM)</span> <b>→</b>
+    <span>database</span> <b>→</b>
+    <span>phrase (LLM words the reply)</span>
   </div>
 
   <p>
-    The booking agent can look up shop status, parse a time expression, find free slots and
-    <em>propose</em> an appointment — a proposal writes a pending payload with a 10-minute
-    expiry, nothing more. When the customer says yes, a <strong>deterministic confirm node with
-    zero LLM calls</strong> reads that pending state and writes the appointment from database
-    values.
+    The booking agent can look up shop status, parse a time expression, find free slots, list the
+    customer's appointments and <em>propose</em> a booking or a cancellation — a proposal writes a
+    pending payload with a 10-minute expiry, nothing more. When the customer says yes, a
+    <strong>deterministic confirm node with zero LLM calls</strong> reads that pending state and
+    writes the appointment from database values. Only then does an LLM word the confirmation,
+    with the date and time handed to it by code; if that call fails, a fixed sentence goes out
+    instead.
   </p>
   <p>
     The customer's identity is bound in a closure when the tools are constructed, so the user id
@@ -89,12 +98,17 @@
     </p>
   </div>
 
-  <h3>The confirm step is also the fastest one</h3>
+  <h3>Every reply is checked in code</h3>
   <p>
-    Because confirmation involves no model call, it returns in roughly <strong>0 seconds</strong>
-    against <strong>1.7–11 seconds</strong> for turns that do invoke the LLM — measured
-    end-to-end over a ten-turn session. The safest step is also the snappiest, which is a
-    pleasant way for an architectural decision to pay off twice.
+    Some problems would not go away with prompting: the model repeating its own sentence word for
+    word, addressing the same customer two different ways, or writing a time in a format the
+    salon never uses. Rules in capitals and a higher temperature did not fix them. So every reply
+    now passes a <strong>guard written in code, with no LLM</strong>: three checks, for repeats,
+    form of address and time format. On a violation the LLM gets one rewrite; if the rewrite still
+    fails, the original draft goes out rather than looping.
+  </p>
+  <p>
+    The repeat check was tuned on 161 sample replies: it flagged 12, with no false positives.
   </p>
 
   <h2>Conversation memory</h2>
@@ -163,7 +177,9 @@
   <table class="res">
     <tr><th>Measure</th><th>Result</th></tr>
     <tr><td>Hallucinated or mis-attributed bookings</td><td>0%, structurally</td></tr>
-    <tr><td>Confirmation latency</td><td>~0 s (vs 1.7–11 s for LLM turns)</td></tr>
+    <tr><td>LLM calls to write a booking</td><td>0</td></tr>
+    <tr><td>Replies checked in code before sending</td><td>all of them</td></tr>
+    <tr><td>Repeat check on 161 sample replies</td><td>12 flagged, 0 false positives</td></tr>
     <tr><td>Date/time parsing</td><td>2.2–2.4 s, measured</td></tr>
     <tr><td>Context per turn</td><td>capped at 1,500 tokens</td></tr>
     <tr><td>Owner-side token cost</td><td>zero — no LLM in the Telegram bot</td></tr>

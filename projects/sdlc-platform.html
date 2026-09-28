@@ -44,10 +44,10 @@
   <h2>Part 1 — Making a document workflow finish</h2>
   <p>
     The SDLC swarm takes a rough product idea and walks it through requirements, specification,
-    design and a UI mockup, one agent per stage. When I picked it up, a run completed with the
-    full document set roughly <strong>half the time</strong>. The other half came out missing a
-    deliverable, or with a stage that produced something the next stage could not consume — and
-    somebody had to notice and run it again.
+    design and a UI mockup, one agent per stage. When I picked it up, only about
+    <strong>half the runs</strong> produced documents that could be used as they came out. The
+    other half came out missing a deliverable, or with a stage that produced something the next
+    stage could not consume — and somebody had to notice and run it again.
   </p>
   <p>
     Failures clustered in a way that pointed at the workflow rather than the models: a stage
@@ -100,6 +100,10 @@
     domain footing — C4 notation, NFR frameworks, SRS writing conventions, job stories,
     adversarial validation checklists.
   </p>
+  <p>
+    The agents are now used by <strong>4 projects</strong>, which hand them the first pass at
+    brainstorming features and drafting requirements from user stories and use cases.
+  </p>
   <div class="callout">
     <p>
       The reference material mattered more than prompt wording. An architecture agent told to
@@ -115,7 +119,8 @@
     cheap models fail the reasoning-heavy stages, and expensive models are wasted on mechanical
     ones. I shipped <strong>per-swarm and per-agent model pinning across four layers</strong> of
     the stack — the Go CLI, the desktop app, the Next.js web UI and the Python orchestrator — so
-    each step runs on a model and reasoning-effort setting chosen for that step.
+    each step runs on a model and reasoning-effort setting chosen for that step. That cut the
+    cost of a workflow run by about <strong>45%</strong>.
   </p>
 
   <h2>Part 2 — Putting agents where developers already are</h2>
@@ -156,7 +161,9 @@
   <h2>Results</h2>
   <table class="res">
     <tr><th>Measure</th><th>Result</th></tr>
-    <tr><td>Swarm runs delivering the full document set first try</td><td>~50% → ~80%</td></tr>
+    <tr><td>Runs whose documents were usable on the first run</td><td>~50% → ~80%</td></tr>
+    <tr><td>Cost per workflow run</td><td>~45% lower</td></tr>
+    <tr><td>Projects using the SDLC agents</td><td>4</td></tr>
     <tr><td>Agent jobs finishing without human intervention</td><td>~80%</td></tr>
     <tr><td>Manual effort moving AI output into Azure DevOps</td><td>~85% less (5–8 steps → 1)</td></tr>
     <tr><td>Customer data on customer infrastructure</td><td>on-prem supported</td></tr>

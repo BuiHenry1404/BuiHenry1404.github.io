@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Salona — agent đặt lịch không thể bịa ra lịch hẹn · Bùi Henry</title>
-<meta name="description" content="Mô hình được dùng 6 tool nhưng không tool nào ghi được lịch. Nó đề xuất khung giờ; code tất định mới ghi từ database. Lịch hẹn ảo không phải chuyện hiếm — nó là bất khả thi.">
+<meta name="description" content="Mô hình được dùng 7 tool nhưng không tool nào ghi được lịch. Nó đề xuất khung giờ; code tất định mới ghi, và mọi câu trả lời đều được code kiểm tra trước khi gửi.">
 <meta property="og:title" content="Salona — agent đặt lịch không thể bịa ra lịch hẹn · Bùi Henry">
-<meta property="og:description" content="Mô hình được dùng 6 tool nhưng không tool nào ghi được lịch. Nó đề xuất khung giờ; code tất định mới ghi từ database. Lịch hẹn ảo không phải chuyện hiếm — nó là bất khả thi.">
+<meta property="og:description" content="Mô hình được dùng 7 tool nhưng không tool nào ghi được lịch. Nó đề xuất khung giờ; code tất định mới ghi, và mọi câu trả lời đều được code kiểm tra trước khi gửi.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://buihenry1404.github.io/vi/projects/salona.html">
 <meta property="og:image" content="https://buihenry1404.github.io/assets/henry.jpg">
@@ -55,23 +55,31 @@
 
   <h2>Cách giải: không cho mô hình quyền ghi</h2>
   <p>
-    Agent chạy trên LangGraph, là một graph định tuyến 5 node. Mô hình được dùng 6 tool, và
+    Agent chạy trên LangGraph: một supervisor chuyển mỗi tin nhắn tới một trong ba agent chuyên
+    trách (đặt lịch, thông tin tiệm, trò chuyện). Agent đặt lịch có 7 tool, và
     <strong>không tool nào tạo được lịch hẹn</strong>.
   </p>
 
   <div class="flow">
-    <span>router</span> <b>→</b>
-    <span>booking agent</span> <b>/</b>
-    <span>status agent</span> <b>/</b>
-    <span>refuse</span>
-    <b>→</b> <span>confirm (không LLM)</span> <b>→</b> <span>database</span>
+    <span>supervisor</span> <b>→</b>
+    <span>booking</span> <b>/</b>
+    <span>shop</span> <b>/</b>
+    <span>social</span>
+    <b>→</b> <span>guard (không LLM)</span> <b>→</b> <span>khách</span>
+  </div>
+  <div class="flow">
+    <span>khách đồng ý</span> <b>→</b>
+    <span>confirm (không LLM)</span> <b>→</b>
+    <span>database</span> <b>→</b>
+    <span>phrase (LLM viết câu trả lời)</span>
   </div>
 
   <p>
     Booking agent tra được trạng thái tiệm, hiểu được cách khách nói về thời gian, tìm được khung
-    giờ trống và <em>đề xuất</em> một lịch hẹn. Đề xuất ở đây chỉ ghi tạm một bản nháp có hạn 10
+    giờ trống, xem lịch của khách và <em>đề xuất</em> đặt hoặc huỷ một lịch hẹn. Đề xuất ở đây chỉ ghi tạm một bản nháp có hạn 10
     phút, không hơn. Khi khách đồng ý, một <strong>node confirm không gọi LLM</strong> mới đọc
-    bản nháp đó và ghi lịch hẹn thật, lấy dữ liệu từ database.
+    bản nháp đó và ghi lịch hẹn thật, lấy dữ liệu từ database. Sau đó LLM mới viết câu xác nhận, với ngày giờ do
+    code đưa vào; nếu lời gọi đó lỗi thì gửi một câu cố định thay thế.
   </p>
   <p>
     Thông tin khách được gắn cứng vào tool ngay lúc khởi tạo, nên mô hình không có cách nào đổi
@@ -87,11 +95,17 @@
     </p>
   </div>
 
-  <h3>Bước xác nhận cũng là bước nhanh nhất</h3>
+  <h3>Mọi câu trả lời đều được kiểm bằng code</h3>
   <p>
-    Vì xác nhận không gọi mô hình, nó phản hồi gần như tức thì — khoảng <strong>0 giây</strong>,
-    so với <strong>1,7–11 giây</strong> ở những lượt có gọi LLM, đo trên một phiên chat 10 lượt.
-    Bước an toàn nhất hoá ra cũng là bước nhanh nhất.
+    Có những lỗi viết prompt thế nào cũng không hết: mô hình lặp nguyên văn câu của chính nó, gọi
+    cùng một khách bằng hai cách khác nhau, hoặc viết giờ sai kiểu tiệm vẫn dùng. Viết luật bằng
+    chữ in hoa hay tăng temperature đều không ăn thua. Nên giờ mọi câu trả lời phải qua một lớp
+    <strong>guard viết bằng code, không dùng LLM</strong>, gồm ba phép kiểm: lặp câu, xưng hô và
+    cách viết giờ. Phạm lỗi thì LLM được viết lại một lần; viết lại vẫn sai thì gửi bản gốc,
+    không lặp vòng.
+  </p>
+  <p>
+    Phép kiểm lặp câu được chỉnh trên 161 câu mẫu: bắt được 12 câu, không bắt nhầm câu nào.
   </p>
 
   <h2>Bộ nhớ hội thoại</h2>
@@ -158,7 +172,9 @@
   <table class="res">
     <tr><th>Chỉ số</th><th>Kết quả</th></tr>
     <tr><td>Lịch hẹn bịa ra hoặc gắn nhầm khách</td><td>0%, do kiến trúc</td></tr>
-    <tr><td>Độ trễ bước xác nhận</td><td>~0 s (so với 1,7–11 s ở lượt có LLM)</td></tr>
+    <tr><td>Số lần gọi LLM để ghi một lịch hẹn</td><td>0</td></tr>
+    <tr><td>Câu trả lời được code kiểm trước khi gửi</td><td>tất cả</td></tr>
+    <tr><td>Phép kiểm lặp câu trên 161 câu mẫu</td><td>bắt 12, không bắt nhầm</td></tr>
     <tr><td>Hiểu ngày giờ khách nói</td><td>2,2–2,4 s, đo thật</td></tr>
     <tr><td>Context mỗi lượt</td><td>tối đa 1.500 token</td></tr>
     <tr><td>Chi phí token phía chủ tiệm</td><td>bằng 0 — bot Telegram không dùng LLM</td></tr>

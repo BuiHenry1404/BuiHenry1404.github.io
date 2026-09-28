@@ -45,7 +45,7 @@
   <p>
     Swarm SDLC nhận một ý tưởng sản phẩm còn thô rồi đưa nó lần lượt qua yêu cầu, đặc tả, thiết
     kế và mockup giao diện, mỗi giai đoạn do một agent phụ trách. Khi tôi nhận phần này, chỉ
-    <strong>khoảng một nửa số lần chạy</strong> cho ra đủ bộ tài liệu. Nửa còn lại thiếu file,
+    <strong>khoảng một nửa số lần chạy</strong> cho ra tài liệu dùng được ngay. Nửa còn lại thiếu file,
     hoặc có giai đoạn tạo ra thứ mà giai đoạn sau không dùng được — và phải có người phát hiện
     rồi chạy lại từ đầu.
   </p>
@@ -100,6 +100,10 @@
     liệu tham chiếu để nó có nền chuyên môn — ký pháp C4, framework NFR, quy ước viết SRS, job
     story, checklist phản biện.
   </p>
+  <p>
+    Hiện có <strong>4 dự án</strong> dùng các agent này để brainstorm tính năng và soạn yêu cầu
+    từ user story và use case, thay cho bước làm tay đầu tiên.
+  </p>
   <div class="callout">
     <p>
       Tài liệu tham chiếu quan trọng hơn cách viết prompt. Một agent kiến trúc chỉ được dặn
@@ -115,7 +119,8 @@
     rẻ thì đuối ở những bước cần suy luận nhiều, còn model đắt thì phí ở những bước máy móc. Tôi
     làm phần <strong>chọn model theo từng swarm và từng agent</strong>, chạy thông suốt qua bốn
     tầng của hệ thống — Go CLI, ứng dụng desktop, web UI Next.js và orchestrator Python — nên mỗi
-    bước dùng đúng model và mức reasoning hợp với nó.
+    bước dùng đúng model và mức reasoning hợp với nó. Nhờ vậy chi phí mỗi lần chạy workflow giảm
+    khoảng <strong>45%</strong>.
   </p>
 
   <h2>Phần 2 — Đưa agent vào đúng chỗ developer đang làm việc</h2>
@@ -156,7 +161,9 @@
   <h2>Kết quả</h2>
   <table class="res">
     <tr><th>Chỉ số</th><th>Kết quả</th></tr>
-    <tr><td>Lượt chạy swarm ra đủ bộ tài liệu ngay lần đầu</td><td>~50% → ~80%</td></tr>
+    <tr><td>Lượt chạy cho ra tài liệu dùng được ngay</td><td>~50% → ~80%</td></tr>
+    <tr><td>Chi phí mỗi lần chạy workflow</td><td>giảm ~45%</td></tr>
+    <tr><td>Số dự án dùng các agent SDLC</td><td>4</td></tr>
     <tr><td>Agent job chạy xong không cần người can thiệp</td><td>~80%</td></tr>
     <tr><td>Thao tác tay để đưa kết quả AI vào Azure DevOps</td><td>giảm ~85% (5–8 bước → 1)</td></tr>
     <tr><td>Dữ liệu khách nằm trên hạ tầng của khách</td><td>hỗ trợ on-prem</td></tr>
