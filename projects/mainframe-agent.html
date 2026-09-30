@@ -122,14 +122,14 @@
   </p>
   <div class="flow">
     <span>question</span> <b>→</b>
-    <span>graph query (knowledge graph)</span> <b>+</b>
-    <span>semantic retrieval (vector DB)</span> <b>+</b>
+    <span>graph query (Neo4j)</span> <b>+</b>
+    <span>semantic retrieval (Qdrant)</span> <b>+</b>
     <span>fetch source</span>
     <b>→</b> <span>LLM synthesis</span>
   </div>
   <ul>
-    <li><strong>A knowledge graph</strong> holds the exact structure the parsers produced — which program reads which field, which job runs which program. This is where a dependency question gets an answer that is true rather than plausible.</li>
-    <li><strong>A vector store</strong> covers the semantic half: finding the relevant area when the question does not name an identifier the graph can key on.</li>
+    <li><strong>A Neo4j knowledge graph</strong> holds the exact structure the parsers produced — which program reads which field, which job runs which program. This is where a dependency question gets an answer that is true rather than plausible.</li>
+    <li><strong>A Qdrant vector store</strong> covers the semantic half: finding the relevant area when the question does not name an identifier the graph can key on.</li>
     <li><strong>The source itself</strong> is fetched last, so the model reasons over real code rather than a summary of it.</li>
   </ul>
   <p>
@@ -190,7 +190,7 @@
   <div class="tags">
     <span class="tag">Python</span><span class="tag">ANTLR4</span><span class="tag">MCP</span>
     <span class="tag">LangGraph</span><span class="tag">LangChain</span><span class="tag">FastAPI</span>
-    <span class="tag">Knowledge graph</span><span class="tag">Vector DB</span><span class="tag">RAG</span>
+    <span class="tag">Neo4j</span><span class="tag">Qdrant</span><span class="tag">RAG</span>
     <span class="tag">COBOL / JCL / CopyBook</span><span class="tag">Docker</span>
   </div>
 

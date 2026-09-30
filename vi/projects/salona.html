@@ -82,6 +82,12 @@
     code đưa vào; nếu lời gọi đó lỗi thì gửi một câu cố định thay thế.
   </p>
   <p>
+    <strong>Tool trả dữ liệu, không trả câu.</strong> Mọi tool đều trả JSON — mốc giờ gồm giá trị
+    ISO kèm cách đọc, lỗi thì là mã như <code>slot_unavailable</code> — còn nói thế nào là việc của
+    prompt. Hồi tool còn trả câu tiếng Việt viết sẵn, mô hình chép lại nguyên văn: một câu khuôn
+    xuất hiện bốn lần trong cùng một cuộc chat dài. Sau khi đổi thì câu đó không còn nữa.
+  </p>
+  <p>
     Thông tin khách được gắn cứng vào tool ngay lúc khởi tạo, nên mô hình không có cách nào đổi
     được người nhận lịch. Đặt nhầm khách không phải lỗi hiếm gặp — đơn giản là không có đường
     code nào dẫn tới nó.
@@ -110,8 +116,8 @@
 
   <h2>Bộ nhớ hội thoại</h2>
   <p>
-    Mỗi lượt chat, agent chỉ được gửi cho mô hình khoảng <strong>1.500 token</strong>. Nhưng cuộc
-    trò chuyện thì cứ dài ra. Nên phải chia thứ cần nhớ làm ba loại, mỗi loại xử lý một kiểu.
+    Lịch sử chat gửi cho mô hình mỗi lượt được giới hạn ở <strong>1.500 token</strong>. Nhưng
+    cuộc trò chuyện thì cứ dài ra. Nên phải chia thứ cần nhớ làm ba loại, mỗi loại xử lý một kiểu.
   </p>
 
   <h3>1. Thông tin hiện tại — đọc lại từ database mỗi lượt</h3>
@@ -134,12 +140,14 @@
     thì phải còn câu trước mới biết &ldquo;giờ đó&rdquo; là giờ nào.
   </p>
 
-  <h3>3. Phần cũ hơn trong ngày — tóm tắt thành gạch đầu dòng</h3>
+  <h3>3. Phần cũ hơn trong ngày — bản tóm tắt kèm slot có cấu trúc</h3>
   <p>
-    Khi phần cũ vượt ~800 token, một lượt chạy nền gộp nó thành tối đa 8 ý ngắn: khách muốn làm
-    gì, đã đề xuất giờ nào, khách nhận hay từ chối, còn gì chưa xong. <strong>Tin đã tóm tắt thì
-    không gửi nguyên văn nữa</strong> — nhờ vậy tổng luôn nằm trong 1.500 token dù trò chuyện dài
-    bao nhiêu.
+    Khi phần cũ vượt ~800 token, một lượt chạy nền nén nó thành một bản tóm tắt ngắn kèm các
+    slot có cấu trúc: khách muốn làm gì, dịch vụ nào, ngày giờ nào, và những giờ khách đã từ chối.
+    LLM điền slot, rồi <strong>code lọc lại</strong> — ngày đã qua hay giờ đã trôi thì bỏ — và
+    không có đường code nào đặt lịch dựa trên slot: chúng chỉ được in thành chữ trong prompt, và
+    luôn thua khối bối cảnh đọc từ database. <strong>Tin đã tóm tắt thì không gửi nguyên văn
+    nữa</strong>, nhờ vậy lịch sử chat luôn nằm trong 1.500 token dù trò chuyện dài bao nhiêu.
   </p>
   <p>
     Việc tóm tắt chạy nền nên khách không phải chờ. Hỏng 3 lần liên tiếp thì dừng tới hết ngày và
@@ -171,12 +179,13 @@
   <h2>Kết quả</h2>
   <table class="res">
     <tr><th>Chỉ số</th><th>Kết quả</th></tr>
-    <tr><td>Lịch hẹn bịa ra hoặc gắn nhầm khách</td><td>0%, do kiến trúc</td></tr>
+    <tr><td>Lịch hẹn LLM tự tạo được</td><td>không có — LLM không có tool ghi</td></tr>
     <tr><td>Số lần gọi LLM để ghi một lịch hẹn</td><td>0</td></tr>
     <tr><td>Câu trả lời được code kiểm trước khi gửi</td><td>tất cả</td></tr>
     <tr><td>Phép kiểm lặp câu trên 161 câu mẫu</td><td>bắt 12, không bắt nhầm</td></tr>
     <tr><td>Hiểu ngày giờ khách nói</td><td>2,2–2,4 s, đo thật</td></tr>
-    <tr><td>Context mỗi lượt</td><td>tối đa 1.500 token</td></tr>
+    <tr><td>Lịch sử chat mỗi lượt</td><td>tối đa 1.500 token</td></tr>
+    <tr><td>Câu khuôn sẵn trong một cuộc chat dài</td><td>4 lần → 0, sau khi tool trả JSON</td></tr>
     <tr><td>Chi phí token phía chủ tiệm</td><td>bằng 0 — bot Telegram không dùng LLM</td></tr>
   </table>
   <p>

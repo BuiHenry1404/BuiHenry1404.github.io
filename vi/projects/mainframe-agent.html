@@ -124,14 +124,14 @@
   </p>
   <div class="flow">
     <span>câu hỏi</span> <b>→</b>
-    <span>truy vấn graph</span> <b>+</b>
-    <span>semantic retrieval (vector DB)</span> <b>+</b>
+    <span>truy vấn graph (Neo4j)</span> <b>+</b>
+    <span>semantic retrieval (Qdrant)</span> <b>+</b>
     <span>lấy source</span>
     <b>→</b> <span>LLM tổng hợp</span>
   </div>
   <ul>
-    <li><strong>Knowledge graph</strong> giữ đúng cấu trúc mà parser sinh ra — chương trình nào đọc trường nào, job nào chạy chương trình nào. Câu hỏi về phụ thuộc được trả lời ở đây, và câu trả lời là đúng chứ không phải nghe hợp lý.</li>
-    <li><strong>Vector store</strong> lo phần ngữ nghĩa: tìm ra vùng liên quan khi câu hỏi không nêu một định danh cụ thể để graph bám vào.</li>
+    <li><strong>Knowledge graph Neo4j</strong> giữ đúng cấu trúc mà parser sinh ra — chương trình nào đọc trường nào, job nào chạy chương trình nào. Câu hỏi về phụ thuộc được trả lời ở đây, và câu trả lời là đúng chứ không phải nghe hợp lý.</li>
+    <li><strong>Vector store Qdrant</strong> lo phần ngữ nghĩa: tìm ra vùng liên quan khi câu hỏi không nêu một định danh cụ thể để graph bám vào.</li>
     <li><strong>Mã nguồn</strong> được lấy sau cùng, để mô hình suy luận trên code thật chứ không phải trên bản tóm tắt.</li>
   </ul>
   <p>
@@ -190,7 +190,7 @@
   <div class="tags">
     <span class="tag">Python</span><span class="tag">ANTLR4</span><span class="tag">MCP</span>
     <span class="tag">LangGraph</span><span class="tag">LangChain</span><span class="tag">FastAPI</span>
-    <span class="tag">Knowledge graph</span><span class="tag">Vector DB</span><span class="tag">RAG</span>
+    <span class="tag">Neo4j</span><span class="tag">Qdrant</span><span class="tag">RAG</span>
     <span class="tag">COBOL / JCL / CopyBook</span><span class="tag">Docker</span>
   </div>
 

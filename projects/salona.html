@@ -85,6 +85,13 @@
     instead.
   </p>
   <p>
+    <strong>Tools return data, not sentences.</strong> Every tool answers with JSON — times as
+    an ISO value plus a spoken form, failures as error codes like <code>slot_unavailable</code> —
+    and the prompt decides how to say it. When the tools still returned ready-made Vietnamese
+    sentences, the model copied them: one canned line showed up four times in a single long
+    chat. After the change it did not appear at all.
+  </p>
+  <p>
     The customer's identity is bound in a closure when the tools are constructed, so the user id
     is never an argument the model can influence. Booking for the wrong person is not a
     low-probability failure — there is no code path that produces it.
@@ -113,8 +120,8 @@
 
   <h2>Conversation memory</h2>
   <p>
-    Each turn sends the model about <strong>1,500 tokens</strong>. But a conversation keeps
-    growing. So what the agent needs to remember is split into three kinds, each handled
+    The chat history sent each turn is capped at <strong>1,500 tokens</strong>. But a
+    conversation keeps growing. So what the agent needs to remember is split into three kinds, each handled
     differently.
   </p>
 
@@ -139,12 +146,15 @@
     says <em>&ldquo;that time works&rdquo;</em>, you need the previous message to know which time.
   </p>
 
-  <h3>3. Older messages from today — summarised into bullet points</h3>
+  <h3>3. Older messages from today — a summary plus structured slots</h3>
   <p>
-    Once the older part passes ~800 tokens, a background pass condenses it into at most eight
-    short facts: what service they want, which times were offered, whether they accepted, what is
-    still open. <strong>Anything already summarised is no longer sent word for word</strong> —
-    which is how the total stays under 1,500 tokens no matter how long the conversation runs.
+    Once the older part passes ~800 tokens, a background pass condenses it into a short summary
+    plus structured slots: what the customer wants to do, the service, the day and time, and the
+    times they already turned down. The LLM fills the slots, then <strong>code filters them</strong>
+    — a day in the past or a time that has already gone is dropped — and no code path books from
+    them: they only become text in the prompt, and the live context block always wins.
+    <strong>Anything already summarised is no longer sent word for word</strong>, which is how
+    the chat history stays under 1,500 tokens no matter how long the conversation runs.
   </p>
   <p>
     The summarising runs in the background, so the customer never waits for it. If it fails three
@@ -176,12 +186,13 @@
   <h2>Results</h2>
   <table class="res">
     <tr><th>Measure</th><th>Result</th></tr>
-    <tr><td>Hallucinated or mis-attributed bookings</td><td>0%, structurally</td></tr>
+    <tr><td>Bookings the LLM can create on its own</td><td>none — it has no write tool</td></tr>
     <tr><td>LLM calls to write a booking</td><td>0</td></tr>
     <tr><td>Replies checked in code before sending</td><td>all of them</td></tr>
     <tr><td>Repeat check on 161 sample replies</td><td>12 flagged, 0 false positives</td></tr>
     <tr><td>Date/time parsing</td><td>2.2–2.4 s, measured</td></tr>
-    <tr><td>Context per turn</td><td>capped at 1,500 tokens</td></tr>
+    <tr><td>Chat history per turn</td><td>capped at 1,500 tokens</td></tr>
+    <tr><td>Canned phrase in a long chat</td><td>4 times → 0, after tools switched to JSON</td></tr>
     <tr><td>Owner-side token cost</td><td>zero — no LLM in the Telegram bot</td></tr>
   </table>
   <p>

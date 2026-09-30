@@ -57,8 +57,8 @@
   <p>I compared three retrieval strategies on a fixed internal query set:</p>
   <ul>
     <li><strong>regex / grep</strong> — no index, pure text matching.</li>
-    <li><strong>Tree-sitter code graph</strong> — parses code into a structural graph; queries follow real symbol and call relationships.</li>
-    <li><strong>Embedding search (CodebaseMemory)</strong> — semantic similarity over chunked code.</li>
+    <li><strong>Tree-sitter code graph (Neo4j)</strong> — parses code into a structural graph stored in Neo4j; queries follow real symbol and call relationships.</li>
+    <li><strong>Embedding search (CodebaseMemory, pgvector)</strong> — semantic similarity over chunked code.</li>
   </ul>
   <p>Scored on three axes, because optimising any one alone gives the wrong answer:</p>
   <ul>
@@ -119,7 +119,7 @@
   <div class="tags">
     <span class="tag">Python</span><span class="tag">Tree-sitter</span>
     <span class="tag">CodebaseMemory</span><span class="tag">Embedding models</span>
-    <span class="tag">Vector DB</span><span class="tag">Hybrid search</span>
+    <span class="tag">Neo4j</span><span class="tag">pgvector</span><span class="tag">Hybrid search</span>
     <span class="tag">RAG</span><span class="tag">Token / cost profiling</span>
   </div>
 

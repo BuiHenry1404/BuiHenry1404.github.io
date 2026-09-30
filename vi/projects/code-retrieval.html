@@ -57,8 +57,8 @@
   <p>Tôi so ba cách lấy context, chạy trên cùng một bộ truy vấn nội bộ cố định:</p>
   <ul>
     <li><strong>regex / grep</strong> — không index gì cả, chỉ khớp chuỗi.</li>
-    <li><strong>code graph Tree-sitter</strong> — parse mã thành đồ thị cấu trúc, truy vấn đi theo quan hệ symbol và lời gọi thật.</li>
-    <li><strong>embedding search (CodebaseMemory)</strong> — so độ tương đồng ngữ nghĩa trên mã đã chia chunk.</li>
+    <li><strong>code graph Tree-sitter (Neo4j)</strong> — parse mã thành đồ thị cấu trúc lưu trong Neo4j, truy vấn đi theo quan hệ symbol và lời gọi thật.</li>
+    <li><strong>embedding search (CodebaseMemory, pgvector)</strong> — so độ tương đồng ngữ nghĩa trên mã đã chia chunk.</li>
   </ul>
   <p>Chấm trên ba tiêu chí, vì chỉ nhìn một tiêu chí là ra kết luận sai:</p>
   <ul>
@@ -119,7 +119,7 @@
   <div class="tags">
     <span class="tag">Python</span><span class="tag">Tree-sitter</span>
     <span class="tag">CodebaseMemory</span><span class="tag">Embedding models</span>
-    <span class="tag">Vector DB</span><span class="tag">Hybrid search</span>
+    <span class="tag">Neo4j</span><span class="tag">pgvector</span><span class="tag">Hybrid search</span>
     <span class="tag">RAG</span><span class="tag">Đo token / chi phí</span>
   </div>
 
