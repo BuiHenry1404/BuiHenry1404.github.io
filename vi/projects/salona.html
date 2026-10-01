@@ -97,7 +97,9 @@
     <p>
       <strong>Nguyên tắc:</strong> guardrail viết trong prompt chỉ là lời dặn, guardrail nằm
       trong kiến trúc mới là bảo đảm. Ở chỗ mà sai là mất tiền mất khách, nên để mô hình đề xuất
-      và để code quyết định ghi.
+      và để code quyết định ghi. Cụ thể ở đây là ba lớp deterministic guardrail: least-privilege
+      tool access (mô hình không có tool ghi), human-in-the-loop confirmation (khách phải đồng ý),
+      và output validation bằng code.
     </p>
   </div>
 

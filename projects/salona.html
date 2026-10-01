@@ -101,7 +101,9 @@
     <p>
       <strong>The principle:</strong> a guardrail that lives in a prompt is a request. A
       guardrail that lives in the architecture is a guarantee. Where the cost of being wrong is
-      real, the model should propose and deterministic code should commit.
+      real, the model should propose and deterministic code should commit. Here that means
+      three deterministic guardrails: least-privilege tool access (the model has no write tool),
+      human-in-the-loop confirmation (the customer has to say yes), and output validation in code.
     </p>
   </div>
 

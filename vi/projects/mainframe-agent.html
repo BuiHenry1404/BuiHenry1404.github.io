@@ -139,9 +139,8 @@
     nhưng chỉ trả lời được những gì đã mô hình hoá; tìm theo ngữ nghĩa thì luôn trả về thứ gì đó,
     nhưng có thể trả về nhầm. Chạy cả hai rồi để mô hình tổng hợp thì chỗ nào có dữ liệu chính
     xác sẽ bám vào dữ liệu đó, chỗ nào không có vẫn còn thứ dùng được. Layer này tách riêng theo
-    từng dự án nên ngữ cảnh cũng được giữ qua nhiều phiên làm việc — kỹ sư không phải nhắc lại
-    mình đang làm chương trình nào mỗi lần quay lại, nhờ đó số câu hỏi làm rõ bị lặp giảm khoảng
-    75%.
+    từng dự án và giữ lại những gì agent đã tra cứu qua nhiều phiên làm việc, nên câu hỏi sau
+    không phải tra lại cùng một đoạn code — nhờ đó số lần tra cứu lại code giảm khoảng 75%.
   </p>
   <p>
     Bản thân agent chạy trên LangGraph theo vòng
@@ -167,7 +166,7 @@
       <td>0 sai lệch</td>
     </tr>
     <tr>
-      <td>Câu hỏi làm rõ bị lặp lại</td>
+      <td>Số lần tra cứu lại code</td>
       <td>So sánh trước và sau khi có layer memory</td>
       <td>giảm ~75%</td>
     </tr>

@@ -137,9 +137,8 @@
     exact but only answers what was modelled; semantic search always returns something but can
     return the wrong thing. Running both and letting the model synthesise gives an answer that is
     grounded where precision exists and still useful where it does not. Scoped per project, the
-    layer also carries context between sessions — an engineer no longer re-explains which program
-    they are working on every time they come back, which cut repeat clarification questions by
-    about 75%.
+    layer also keeps what the agent has already looked up, across sessions, so it does not query
+    the same code again for the next question — which cut repeated code lookups by about 75%.
   </p>
   <p>
     The agent itself runs on LangGraph as a <code>retrieve → reason → tool call → answer</code>
@@ -165,7 +164,7 @@
       <td>0 byte/bit errors</td>
     </tr>
     <tr>
-      <td>Repeat clarification questions</td>
+      <td>Repeated code lookups</td>
       <td>Before/after the custom memory layer</td>
       <td>~75% fewer</td>
     </tr>
