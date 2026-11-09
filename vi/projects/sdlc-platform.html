@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Nền tảng SDLC đa agent · Bùi Henry</title>
-<meta name="description" content="Sáu agent SDLC và quy trình 9 bước biến ý tưởng thô thành yêu cầu, thiết kế và mockup — cùng phần tích hợp Azure DevOps đưa nó vào đúng chỗ developer làm việc.">
+<meta name="description" content="Sáu agent SDLC và quy trình 9 bước biến ý tưởng thô thành yêu cầu, thiết kế và mockup — cùng phần tích hợp Azure DevOps đưa agent vào đúng chỗ developer làm việc, và đưa từng dự án lên dùng.">
 <meta property="og:title" content="Nền tảng SDLC đa agent · Bùi Henry">
-<meta property="og:description" content="Sáu agent SDLC và quy trình 9 bước biến ý tưởng thô thành yêu cầu, thiết kế và mockup — cùng phần tích hợp Azure DevOps đưa nó vào đúng chỗ developer làm việc.">
+<meta property="og:description" content="Sáu agent SDLC và quy trình 9 bước biến ý tưởng thô thành yêu cầu, thiết kế và mockup — cùng phần tích hợp Azure DevOps đưa agent vào đúng chỗ developer làm việc, và đưa từng dự án lên dùng.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://buihenry1404.github.io/vi/projects/sdlc-platform.html">
 <meta property="og:image" content="https://buihenry1404.github.io/assets/henry.jpg">
@@ -37,8 +37,8 @@
 
   <p class="lead">
     Nền tảng chạy các &ldquo;swarm&rdquo; đa agent xuyên suốt vòng đời phát triển phần mềm. Tôi
-    làm hai phần: nhóm agent sinh ra tài liệu, và phần tích hợp Azure DevOps để developer dùng
-    được chúng ngay trong công cụ họ vốn đã làm việc hằng ngày.
+    làm ba phần: nhóm agent sinh ra tài liệu, phần tích hợp Azure DevOps để developer dùng được
+    chúng ngay trong công cụ họ vốn đã làm việc hằng ngày, và đưa từng dự án lên nền tảng.
   </p>
 
   <h2>Phần 1 — Làm cho một quy trình sinh tài liệu chạy tới đích</h2>
@@ -101,8 +101,10 @@
     story, checklist phản biện.
   </p>
   <p>
-    Hiện có <strong>4 dự án</strong> dùng các agent này để brainstorm tính năng và soạn yêu cầu
-    từ user story và use case, thay cho bước làm tay đầu tiên.
+    Mọi đầu ra đều truy vết được: ưu tiên MoSCoW và ID ổn định đi xuyên từ user story qua yêu
+    cầu, thiết kế tới mockup, kèm sơ đồ C4, sequence và ERD. Hiện có <strong>4 dự án</strong>
+    dùng các agent này và nhờ đó <strong>ra bản MVP hoặc demo nhanh hơn</strong> — các dự án giao
+    cho agent bước brainstorm tính năng và soạn yêu cầu đầu tiên từ user story và use case.
   </p>
   <div class="callout">
     <p>
@@ -147,15 +149,30 @@
   <p>
     Job được đẩy xuống cho worker chạy trên máy developer nhận về, chạy agent rồi báo kết quả
     ngược lên. Vì cùng một mention có thể tới nhiều lần — webhook của Azure DevOps sẽ gửi lại khi
-    nghi ngờ gửi hỏng — nên luồng này được thiết kế để mỗi yêu cầu chỉ chạy đúng một lần.
+    nghi ngờ gửi hỏng — nên luồng này được thiết kế để mỗi yêu cầu chỉ chạy đúng một lần. Job
+    chạy dài cũng tự phục hồi: job bị treo, mất kết nối hay chạy trùng đều được xử lý tự động,
+    nên khoảng <strong>80% agent job chạy xong mà không cần ai theo dõi</strong>.
   </p>
 
   <h3>Bảo mật và phạm vi triển khai</h3>
   <p>
     Có khách hàng yêu cầu mọi thông tin phải nằm hoàn toàn trong hạ tầng nội bộ của họ. Tôi bổ
     sung hỗ trợ <strong>Azure DevOps Server tự host</strong> bên cạnh bản cloud, để work item và
-    mã nguồn của họ không rời khỏi mạng nội bộ. Credential thì được che khỏi log và trace ở cả
-    hai kiểu kết nối.
+    mã nguồn của họ không rời khỏi mạng nội bộ. Access token được che trong log ở cả hai kiểu
+    kết nối.
+  </p>
+
+  <h2>Phần 3 — Đưa dự án lên nền tảng (Forward Deployed Engineer)</h2>
+  <p>
+    Agent chỉ tốt bằng ngữ cảnh dự án mà nó đọc được, mà ở phần lớn dự án ngữ cảnh đó nằm rải
+    rác trong file, tin nhắn và trong đầu từng người. Với vai trò <strong>Forward Deployed
+    Engineer</strong>, tôi đưa <strong>2 dự án</strong> lên nền tảng: <strong>~100 tài liệu rời
+    rạc</strong> (mỗi dự án khoảng 50) được chuyển lên Azure DevOps Wiki theo cây thư mục và
+    khuôn trang chuẩn, để mọi agent đọc cùng một ngữ cảnh chung của dự án.
+  </p>
+  <p>
+    Sau đó tôi đồng hành cùng từng đội đưa workflow agent vào quy trình hằng ngày — bước nào giao
+    cho agent, và chỗ nào vẫn cần người duyệt.
   </p>
 
   <h2>Kết quả</h2>
@@ -163,10 +180,11 @@
     <tr><th>Chỉ số</th><th>Kết quả</th></tr>
     <tr><td>Lượt chạy cho ra tài liệu dùng được ngay</td><td>~50% → ~80%</td></tr>
     <tr><td>Chi phí mỗi lần chạy workflow</td><td>giảm ~45%</td></tr>
-    <tr><td>Số dự án dùng các agent SDLC</td><td>4</td></tr>
+    <tr><td>Số dự án dùng các agent SDLC</td><td>4, đều ra MVP/demo nhanh hơn</td></tr>
     <tr><td>Agent job chạy xong không cần người can thiệp</td><td>~80%</td></tr>
     <tr><td>Số bước tay để đưa kết quả AI vào Azure DevOps</td><td>5–8 → 1 (giảm ~85%)</td></tr>
     <tr><td>Dữ liệu khách nằm trên hạ tầng của khách</td><td>hỗ trợ on-prem</td></tr>
+    <tr><td>Dự án được đưa lên nền tảng (vai trò FDE)</td><td>2 (~100 tài liệu → ngữ cảnh chung trên wiki)</td></tr>
   </table>
   <p>
     Repository này có 22 người đóng góp và tôi đứng thứ ba về số commit — đây là sản phẩm của cả

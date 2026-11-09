@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Bùi Henry — AI Engineer</title>
-<meta name="description" content="AI Engineer xây dựng LLM agent chạy production: grounding, retrieval, tool calling và guardrail. Python, FastAPI, LangGraph, MCP.">
+<meta name="description" content="AI Engineer xây dựng LLM agent cho bài toán thực tế trong phát triển phần mềm: điều phối đa agent, MCP tool, retrieval, human-in-the-loop và guardrail. Python, LangChain, LangGraph.">
 <meta property="og:title" content="Bùi Henry — AI Engineer">
-<meta property="og:description" content="AI Engineer xây dựng LLM agent chạy production: grounding, retrieval, tool calling và guardrail. Python, FastAPI, LangGraph, MCP.">
+<meta property="og:description" content="AI Engineer xây dựng LLM agent cho bài toán thực tế trong phát triển phần mềm: điều phối đa agent, MCP tool, retrieval, human-in-the-loop và guardrail. Python, LangChain, LangGraph.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://buihenry1404.github.io/vi">
 <meta property="og:image" content="https://buihenry1404.github.io/assets/henry.jpg">
@@ -36,7 +36,7 @@
     <div>
       <h1>Bùi Henry</h1>
       <div class="hero__role">AI ENGINEER</div>
-      <p class="hero__lede">Tôi xây LLM agent bằng Python và FastAPI, trả lời dựa trên source code thật: parser và MCP tool đưa dữ kiện cho model, còn code kiểm tra kết quả trước khi lưu.</p>
+      <p class="hero__lede">Tôi xây AI agent cho các bài toán thực tế trong phát triển phần mềm — từ hiểu các codebase cũ hàng triệu dòng, tự động hoá việc soạn tài liệu, tới giao việc cho agent ngay trong công cụ đội đang dùng. Agent trả lời dựa trên dữ kiện, chỉ hành động khi được xác nhận, và được đội ngũ thật sự dùng.</p>
       <div class="btns">
         <a class="btn btn--primary" href="#work">Xem dự án</a>
         <a class="btn btn--ghost" href="#contact">Liên hệ</a>
@@ -52,20 +52,20 @@
 <div class="wrap">
   <div class="stats reveal">
     <div class="stat">
-      <div class="stat__n">−60%</div>
-      <div class="stat__l">hallucination của agent hỗ trợ COBOL</div>
+      <div class="stat__n">50→20%</div>
+      <div class="stat__l">câu trả lời thiếu căn cứ của agent hỗ trợ COBOL</div>
     </div>
     <div class="stat">
-      <div class="stat__n">−20–30%</div>
-      <div class="stat__l">token context mỗi lần tra code</div>
+      <div class="stat__n">60→90%</div>
+      <div class="stat__l">recall truy xuất cho truy vấn bug fix của coding agent</div>
     </div>
     <div class="stat">
       <div class="stat__n">50→80%</div>
       <div class="stat__l">tài liệu dùng được ngay lần chạy đầu, workflow 9 bước</div>
     </div>
     <div class="stat">
-      <div class="stat__n">2+ năm</div>
-      <div class="stat__l">xây agent tại FPT Software</div>
+      <div class="stat__n">4</div>
+      <div class="stat__l">dự án ra bản MVP/demo nhanh hơn nhờ các agent SDLC</div>
     </div>
   </div>
 </div>
@@ -79,22 +79,22 @@
       <a class="card reveal" href="projects/sdlc-platform.html">
         <div class="card__meta">FPT Software · 04/2026 – nay</div>
         <div class="card__t">Nền tảng SDLC đa agent</div>
-        <p class="card__d">Sáu agent SDLC và quy trình 9 bước biến một ý tưởng thô thành yêu cầu, thiết kế và mockup — cùng phần tích hợp Azure DevOps đưa nó tới đúng nơi developer làm việc.</p>
+        <p class="card__d">Sáu agent SDLC và quy trình 9 bước biến một ý tưởng thô thành yêu cầu, thiết kế và mockup — cùng phần tích hợp Azure DevOps đưa agent tới đúng nơi developer làm việc, và đưa từng dự án lên dùng.</p>
         <div class="card__k">50% → 80% dùng được ngay lần đầu →</div>
       </a>
 
       <a class="card reveal" href="projects/code-retrieval.html">
         <div class="card__meta">FPT Software · 06 – 09/2026</div>
-        <div class="card__t">Retrieval cho coding agent</div>
-        <p class="card__d">Benchmark regex, code graph Tree-sitter và embedding search trên monorepo 3 triệu dòng. Phương án thắng rẻ hơn — và kém hơn ở đúng một việc.</p>
-        <div class="card__k">−20–30% chi phí token →</div>
+        <div class="card__t">Hybrid retrieval cho coding agent</div>
+        <p class="card__d">Benchmark regex, đồ thị code và embedding search trên 15–20 repo. Embedding rẻ nhất nhưng bỏ sót luồng chương trình thật, nên tôi xây hybrid retrieval kèm re-ranking — giờ là phương án mặc định của nhóm.</p>
+        <div class="card__k">recall 60% → 90% →</div>
       </a>
 
       <a class="card reveal" href="projects/mainframe-agent.html">
         <div class="card__meta">FPT Software · 11/2025 – 04/2026</div>
         <div class="card__t">Agent trả lời từ mã COBOL thật</div>
-        <p class="card__d">Parser ANTLR4 chuyển COBOL/JCL/CopyBook thành JSON có cấu trúc; MCP tool cho LLM tra phụ thuộc thật thay vì đoán.</p>
-        <div class="card__k">−60% hallucination →</div>
+        <p class="card__d">Parser ANTLR4 chuyển COBOL/JCL/CopyBook thành JSON có cấu trúc; MCP tool cùng bộ nhớ graph + vector cho LLM tra phụ thuộc thật thay vì đoán.</p>
+        <div class="card__k">~50% → ~20% câu thiếu căn cứ →</div>
       </a>
     </div>
   </div>
@@ -107,10 +107,17 @@
     <div class="cards">
 
       <a class="card reveal" href="projects/salona.html">
-        <div class="card__meta">Cá nhân · 08/2026</div>
-        <div class="card__t">Agent đặt lịch có guardrail kiến trúc</div>
-        <p class="card__d">Agent gọi bảy tool để tìm khung giờ trống, nhưng không có quyền ghi: một node tất định mới ghi lịch từ database, và mọi câu trả lời đều qua một lớp kiểm tra bằng code.</p>
-        <div class="card__k">LLM không có quyền ghi lịch →</div>
+        <div class="card__meta">Cá nhân · 08/2026 – nay</div>
+        <div class="card__t">Agent đặt lịch không thể tự bịa lịch hẹn</div>
+        <p class="card__d">Một agent điều phối và ba agent con trên LangChain + LangGraph. LLM chỉ được đề xuất; khách xác nhận, code mới ghi, và mọi câu trả lời đều qua guardrail bằng code.</p>
+        <div class="card__k">LLM không có đường ghi lịch →</div>
+      </a>
+
+      <a class="card reveal" href="https://github.com/BuiHenry1404/ai-agent-study-planning" target="_blank" rel="noopener">
+        <div class="card__meta">Cá nhân · 07 – 08/2025</div>
+        <div class="card__t">AI Study Planner</div>
+        <p class="card__d">Group chat Microsoft AutoGen biến mục tiêu học tập dạng chữ tự do thành lịch học trên Google Calendar, có giới hạn lượt, lưu trạng thái phiên và stream thời gian thực qua Socket.IO.</p>
+        <div class="card__k">Mã nguồn trên GitHub ↗</div>
       </a>
     </div>
   </div>
@@ -122,12 +129,16 @@
     <p class="sub">Những thứ tôi dùng, xếp gần theo tần suất.</p>
     <div class="skills">
       <div class="skill">
-        <div class="skill__k">AI / LLM</div>
-        <div class="skill__v">LangGraph, LangChain, AutoGen · điều phối multi-agent · tool calling · MCP (Model Context Protocol) · RAG, retrieval &amp; embedding search · bộ nhớ dài hạn cho agent (Neo4j + Qdrant) · prompt &amp; context engineering · structured output · guardrail · đánh giá LLM · Azure OpenAI · Langfuse</div>
+        <div class="skill__k">AI agent</div>
+        <div class="skill__v">LangChain, LangGraph, Microsoft AutoGen · điều phối đa agent · tool calling · MCP (Model Context Protocol) · human-in-the-loop · guardrail · bộ nhớ agent · context engineering · structured output · model routing</div>
+      </div>
+      <div class="skill">
+        <div class="skill__k">Retrieval &amp; eval</div>
+        <div class="skill__v">hybrid retrieval · re-ranking · knowledge graph · embedding search · pgvector · Neo4j · RAG · đánh giá LLM · Langfuse (observability) · đo token / chi phí · Azure OpenAI</div>
       </div>
       <div class="skill">
         <div class="skill__k">Backend</div>
-        <div class="skill__v">Python · FastAPI · REST API · Socket.IO · Redis · PostgreSQL / Supabase · MongoDB · Neo4j · Qdrant · pgvector · Docker</div>
+        <div class="skill__v">Python (chính), Java · FastAPI · REST API · Socket.IO · JWT · Spring Boot · PostgreSQL / Supabase · MongoDB · Redis · MySQL · Docker</div>
       </div>
       <div class="skill">
         <div class="skill__k">Parsing / công cụ</div>

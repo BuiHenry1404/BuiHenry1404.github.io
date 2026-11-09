@@ -16,8 +16,8 @@ index.html                       landing page (EN)
 projects/
   mainframe-agent.html           grounding an LLM agent in COBOL
   sdlc-platform.html             multi-agent SDLC platform
-  code-retrieval.html            retrieval benchmark for coding agents
-  salona.html                    booking agent with an architectural guardrail
+  code-retrieval.html            hybrid retrieval for coding agents
+  salona.html                    orchestrator + sub-agents booking agent, HITL, guardrail
 vi/                              the same five pages in Vietnamese
 assets/
   style.css                      design tokens + all styling

@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Salona — a booking agent that cannot invent a booking · Bùi Henry</title>
-<meta name="description" content="Seven tools are exposed to the LLM and none of them can write a booking. It proposes a slot; deterministic code commits it, and every reply is checked in code before it is sent.">
+<meta name="description" content="An orchestrator and three sub-agents built with LangChain + LangGraph. The LLM can only propose a booking; the customer confirms, code commits, and a code guardrail checks every reply before it is sent.">
 <meta property="og:title" content="Salona — a booking agent that cannot invent a booking · Bùi Henry">
-<meta property="og:description" content="Seven tools are exposed to the LLM and none of them can write a booking. It proposes a slot; deterministic code commits it, and every reply is checked in code before it is sent.">
+<meta property="og:description" content="An orchestrator and three sub-agents built with LangChain + LangGraph. The LLM can only propose a booking; the customer confirms, code commits, and a code guardrail checks every reply before it is sent.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://buihenry1404.github.io/projects/salona.html">
 <meta property="og:image" content="https://buihenry1404.github.io/assets/henry.jpg">
@@ -33,182 +33,142 @@
 
 <article class="wrap article">
   <h1>A booking agent that cannot invent a booking</h1>
-  <div class="article__meta">Salona Booking · Personal project (2 people) · Aug 2026 ·
+  <div class="article__meta">Salona Booking · Personal project (2 people, lead developer) · Aug 2026 – present ·
     <a href="https://github.com/BuiHenry1404/salona-booking">source on GitHub</a></div>
 
 <p class="lead">
-    An AI receptionist for a small nail &amp; hair salon. Customers chat to book; the owner manages
-    availability from an admin UI and a Telegram bot. The interesting constraint is what the
-    model is <em>not</em> allowed to do.
+    An AI receptionist for a small nail &amp; hair salon: customers chat to ask about the shop,
+    services and prices, and to book or cancel. The interesting constraint is what the model is
+    <em>not</em> allowed to do.
   </p>
 
   <h2>The problem with letting a model book things</h2>
   <p>
     A chat booking assistant is a standard demo. It is also a standard way to create a real-world
-    mess: the model confirms a slot that was taken, invents a time that was never offered, or
-    attaches an appointment to the wrong customer. Prompting helps and does not solve it —
-    "never confirm an unavailable slot" is a request, not a guarantee.
-  </p>
-  <p>
-    For a salon owner this is not an abstract quality metric. It is a customer arriving for an
-    appointment that does not exist.
+    mess: the model confirms a slot that was taken, quotes a price the salon never charges, or says
+    &ldquo;you're booked&rdquo; when nothing was written. Prompting helps and does not solve it —
+    &ldquo;never confirm an unavailable slot&rdquo; is a request, not a guarantee. For a salon
+    owner it is a customer arriving for an appointment that does not exist.
   </p>
 
-  <h2>The design: take away the write tool</h2>
+  <h2>Architecture: one orchestrator, three sub-agents</h2>
   <p>
-    The agent runs on LangGraph: a supervisor routes each message to one of three specialist
-    agents (booking, shop info, small talk). The booking agent has seven tools, and
-    <strong>none of them can create an appointment</strong>.
+    The system is built with <strong>LangChain + LangGraph</strong>. An orchestrator agent reads
+    the customer's message, reasons about the next step and calls three sub-agents as tools —
+    <strong>Booking</strong>, <strong>Shop Info</strong> and <strong>Services &amp; Pricing</strong>
+    — as many times as a turn needs. Sub-agents talk to each other only through the orchestrator:
+    Services reports that a dye job takes two hours, and the orchestrator hands that to Booking.
   </p>
-
   <div class="flow">
-    <span>supervisor</span> <b>→</b>
-    <span>booking</span> <b>/</b>
-    <span>shop</span> <b>/</b>
-    <span>social</span>
-    <b>→</b> <span>guard (no LLM)</span> <b>→</b> <span>customer</span>
+    <span>customer</span> <b>→</b>
+    <span>orchestrator</span> <b>⇄</b>
+    <span>Booking · Shop Info · Services</span> <b>→</b>
+    <span>guardrail (code)</span> <b>→</b>
+    <span>customer</span>
   </div>
-  <div class="flow">
-    <span>customer says yes</span> <b>→</b>
-    <span>confirm (no LLM)</span> <b>→</b>
-    <span>database</span> <b>→</b>
-    <span>phrase (LLM words the reply)</span>
-  </div>
-
-  <p>
-    The booking agent can look up shop status, parse a time expression, find free slots, list the
-    customer's appointments and <em>propose</em> a booking or a cancellation — a proposal writes a
-    pending payload with a 10-minute expiry, nothing more. When the customer says yes, a
-    <strong>deterministic confirm node with zero LLM calls</strong> reads that pending state and
-    writes the appointment from database values. Only then does an LLM word the confirmation,
-    with the date and time handed to it by code; if that call fails, a fixed sentence goes out
-    instead.
-  </p>
-  <p>
-    <strong>Tools return data, not sentences.</strong> Every tool answers with JSON — times as
-    an ISO value plus a spoken form, failures as error codes like <code>slot_unavailable</code> —
-    and the prompt decides how to say it. When the tools still returned ready-made Vietnamese
-    sentences, the model copied them: one canned line showed up four times in a single long
-    chat. After the change it did not appear at all.
-  </p>
-  <p>
-    The customer's identity is bound in a closure when the tools are constructed, so the user id
-    is never an argument the model can influence. Booking for the wrong person is not a
-    low-probability failure — there is no code path that produces it.
-  </p>
-
-  <div class="callout">
-    <p>
-      <strong>The principle:</strong> a guardrail that lives in a prompt is a request. A
-      guardrail that lives in the architecture is a guarantee. Where the cost of being wrong is
-      real, the model should propose and deterministic code should commit. Here that means
-      three deterministic guardrails: least-privilege tool access (the model has no write tool),
-      human-in-the-loop confirmation (the customer has to say yes), and output validation in code.
-    </p>
-  </div>
-
-  <h3>Every reply is checked in code</h3>
-  <p>
-    Some problems would not go away with prompting: the model repeating its own sentence word for
-    word, addressing the same customer two different ways, or writing a time in a format the
-    salon never uses. Rules in capitals and a higher temperature did not fix them. So every reply
-    now passes a <strong>guard written in code, with no LLM</strong>: three checks, for repeats,
-    form of address and time format. On a violation the LLM gets one rewrite; if the rewrite still
-    fails, the original draft goes out rather than looping.
-  </p>
-  <p>
-    The repeat check was tuned on 161 sample replies: it flagged 12, with no false positives.
-  </p>
-
-  <h2>Conversation memory</h2>
-  <p>
-    The chat history sent each turn is capped at <strong>1,500 tokens</strong>. But a
-    conversation keeps growing. So what the agent needs to remember is split into three kinds, each handled
-    differently.
-  </p>
-
-  <h3>1. Current facts — re-read from the database every turn</h3>
-  <p>
-    Who the customer is, how to address them, whether the owner is busy and until when, what
-    appointments they already have. None of this comes from the chat history; it is read straight
-    from the database on every turn. The model cannot remember it wrong, because it is not
-    remembering — it is reading.
-  </p>
-  <p>Every line here was added after something actually broke:</p>
   <ul>
-    <li>Not stating today's date → the customer says <em>&ldquo;tomorrow&rdquo;</em>, the model takes today's date from its training data and books a year out.</li>
-    <li>Not including appointment ids → the model invented an id to cancel, and cancelled nothing.</li>
-    <li>Writing <em>&ldquo;free in 30 minutes&rdquo;</em> instead of <em>&ldquo;free at 3:30&rdquo;</em> → that sentence stays in the history and is wrong forever after.</li>
-    <li>Not fixing one form of address → the same customer got called two different things four turns apart.</li>
+    <li><strong>Sub-agents as tools, not handoffs.</strong> I compared the Subagents, Handoffs and Router patterns. Handoffs would let a sub-agent speak to the customer directly; a router keeps no state across a multi-turn chat. With sub-agents as tools, only one agent ever talks to the customer.</li>
+    <li><strong>Stateless sub-agents with structured results.</strong> Each sub-agent is rebuilt per call and returns <em>ok</em>, <em>need info</em> or <em>failed</em> plus facts that code extracts from tool output and the database. The orchestrator decides on facts, never on another model's free text.</li>
+    <li><strong>No business tools on the orchestrator.</strong> It cannot read the calendar or compute a date itself; every lookup goes through the sub-agent that owns it.</li>
   </ul>
 
-  <h3>2. The last few turns — kept word for word</h3>
+  <h2>Per-turn context</h2>
   <p>
-    This is where the negotiation is happening, so it cannot be compressed. When the customer
-    says <em>&ldquo;that time works&rdquo;</em>, you need the previous message to know which time.
+    Each turn starts from a <strong>context snapshot built from the database</strong> — who the
+    customer is and how to address them, today's date, their upcoming appointments, any proposal
+    waiting for an answer — re-read whenever a tool changes the data. Each sub-agent receives only
+    the part it needs. Tools that cannot be used at that moment are <strong>hidden from the
+    model</strong>: with a proposal waiting, the orchestrator cannot start another booking until it
+    has dealt with that one.
+  </p>
+  <p>
+    The first version taught most of these rules. Without today's date, &ldquo;tomorrow&rdquo;
+    landed a year out. Without real appointment ids, the model invented one and cancelled nothing —
+    so ids are now an enum built per customer, per turn, and an id the model makes up does not fit
+    the tool's schema. And when tools returned ready-made sentences, the model copied them; tools
+    now return data and the agent decides how to say it.
   </p>
 
-  <h3>3. Older messages from today — a summary plus structured slots</h3>
+  <h2>Human-in-the-loop that fits how people chat</h2>
   <p>
-    Once the older part passes ~800 tokens, a background pass condenses it into a short summary
-    plus structured slots: what the customer wants to do, the service, the day and time, and the
-    times they already turned down. The LLM fills the slots, then <strong>code filters them</strong>
-    — a day in the past or a time that has already gone is dropped — and no code path books from
-    them: they only become text in the prompt, and the live context block always wins.
-    <strong>Anything already summarised is no longer sent word for word</strong>, which is how
-    the chat history stays under 1,500 tokens no matter how long the conversation runs.
+    No agent can write a booking. The Booking agent can only create a <strong>proposal</strong>.
+    The customer approves it on the next turn — with one tap on a button, or by typing a reply, even
+    after asking about something else first — and only then does code commit it.
   </p>
+  <div class="flow">
+    <span>turn N: proposal + buttons</span> <b>→</b>
+    <span>customer taps or types</span> <b>→</b>
+    <span>turn N+1: one decision path</span> <b>→</b>
+    <span>code writes from DB values</span>
+  </div>
+  <ul>
+    <li><strong>One path for every decision.</strong> A button press is a plain code API with no model call. A typed reply is labelled by the orchestrator (approve, reject, change, unclear, or not about the proposal), and code may only move that label towards &ldquo;not yet&rdquo; — never towards &ldquo;yes&rdquo;. Both end in the same decision function.</li>
+    <li><strong>The write takes nothing from the model.</strong> Approval checks owner, expiry, that it comes on a later turn, single use and that the slot is unchanged, then writes in one MongoDB transaction together with the turn record, using values from the database rather than anything the model typed.</li>
+    <li><strong>A waiting proposal must be decided.</strong> If the turn ends with it still open and the customer did answer, the reply is rejected and rewritten.</li>
+  </ul>
   <p>
-    The summarising runs in the background, so the customer never waits for it. If it fails three
-    times in a row it stops for the day and falls back to plain history — slower, not broken.
+    I tested LangGraph's built-in pause/resume for this and dropped it. Against the real model it
+    took an off-topic question (&ldquo;what time do you close?&rdquo;) as the answer to the paused
+    question; a normal message sent while the graph was paused left a tool call without a result
+    and broke the thread; and the paused question went to the customer without passing the
+    guardrail. Unfinished sub-agent work is instead stored in the database as a
+    <strong>waiting session that expires 10 minutes</strong> after the last question, and the
+    orchestrator chooses whether to continue it or start something new.
   </p>
 
+  <h2>A guardrail inside the agent loop</h2>
+  <p>
+    After every model answer, <strong>deterministic evaluators in code</strong> check it against
+    the facts from tools and the database before the customer sees anything:
+  </p>
+  <ul>
+    <li><strong>Unsupported claims</strong> — &ldquo;booked&rdquo;, &ldquo;cancelled&rdquo; or &ldquo;moved&rdquo; with no matching write this turn.</li>
+    <li><strong>Times and prices</strong> — every time must be one the tools returned, every amount must sit inside the catalogue's price range for the services involved.</li>
+    <li><strong>Required facts and pending decisions</strong> — nothing the turn depended on left out.</li>
+    <li><strong>Form of address and repetition</strong> — the same customer is addressed the same way, and the agent does not repeat itself word for word.</li>
+  </ul>
+  <p>
+    A failing answer is removed and gets <strong>one rewrite with no tools</strong> — text only,
+    same facts, no new lookups or proposals. If that fails too, a <strong>code-written
+    fallback</strong> goes out. Replies are not streamed, so the customer never sees a wrong
+    sentence that is then replaced.
+  </p>
   <div class="callout">
     <p>
-      Earlier days are dropped entirely. I did build memory that carried across sessions, then
-      removed it: for salon bookings, yesterday's chat does not help today, and anything that
-      still matters is already in the database.
+      <strong>The principle:</strong> a guardrail that lives in a prompt is a request. A guardrail
+      that lives in the architecture is a guarantee. Where being wrong costs something real, the
+      model proposes and deterministic code commits.
     </p>
   </div>
 
-  <h2>The owner's side</h2>
-  <p>
-    The salon owner gets a Telegram bot with a four-button keyboard — see today's bookings, see
-    tomorrow's, mark busy, mark free. It contains <strong>no LLM at all</strong>. For an
-    interface where every action is one of four known operations, a language model would add
-    cost, latency and a failure mode in exchange for nothing.
-  </p>
-  <p>
-    Every agent run is traced through a <strong>self-hosted Langfuse</strong> instance, so
-    latency and cost are observable per turn without customer conversations leaving the host.
-    Date and time parsing is isolated into its own LLM call returning structured output, which
-    runs in a measured 2.2–2.4 seconds.
-  </p>
+  <h2>Memory and cost</h2>
+  <ul>
+    <li><strong>Short-term memory per conversation</strong> — one thread per customer per day, with LangChain's summarization middleware condensing long histories.</li>
+    <li><strong>Long-term memory per customer</strong> — preferences, notes and the last visit, kept in the LangGraph store on MongoDB and consolidated at the start of each new conversation. Sub-agents do not receive it.</li>
+    <li><strong>Bounded cost</strong> — per-turn caps on model and tool calls, and an hourly LLM budget per customer that counts sub-agent calls too. Hitting a cap ends the turn with a code-written reply, never a library error message.</li>
+    <li><strong>Observability</strong> — every run is traced in a self-hosted Langfuse, so latency and cost are visible per turn without conversations leaving the host.</li>
+  </ul>
 
   <h2>Results</h2>
   <table class="res">
     <tr><th>Measure</th><th>Result</th></tr>
-    <tr><td>Bookings the LLM can create on its own</td><td>none — it has no write tool</td></tr>
-    <tr><td>LLM calls to write a booking</td><td>0</td></tr>
+    <tr><td>Bookings the LLM can write on its own</td><td>none — it can only propose</td></tr>
+    <tr><td>Paths that approve a proposal</td><td>one, shared by buttons and typed replies</td></tr>
     <tr><td>Replies checked in code before sending</td><td>all of them</td></tr>
-    <tr><td>Repeat check on 161 sample replies</td><td>12 flagged, 0 false positives</td></tr>
-    <tr><td>Date/time parsing</td><td>2.2–2.4 s, measured</td></tr>
-    <tr><td>Chat history per turn</td><td>capped at 1,500 tokens</td></tr>
-    <tr><td>Canned phrase in a long chat</td><td>4 times → 0, after tools switched to JSON</td></tr>
-    <tr><td>Owner-side token cost</td><td>zero — no LLM in the Telegram bot</td></tr>
+    <tr><td>Failed reply</td><td>1 tool-free rewrite, then a code fallback</td></tr>
+    <tr><td>Unfinished sub-agent work</td><td>kept in MongoDB, expires after 10 minutes</td></tr>
+    <tr><td>Cost bounds</td><td>per-turn call caps + hourly LLM budget per customer</td></tr>
   </table>
   <p>
-    The system is feature-complete and running locally with a full test suite; it has not been
-    deployed to the salon in production.
+    This page describes the orchestrator–sub-agent rebuild, which I am finishing now. It runs
+    locally with a full pytest suite; it has not been deployed to the salon yet.
   </p>
 
   <h2>Stack</h2>
   <div class="tags">
-    <span class="tag">Python</span><span class="tag">FastAPI</span><span class="tag">LangGraph</span>
-    <span class="tag">Azure OpenAI</span><span class="tag">MongoDB</span><span class="tag">React</span>
-    <span class="tag">TypeScript</span><span class="tag">Socket.IO</span>
-    <span class="tag">Telegram Bot API</span><span class="tag">Langfuse</span>
-    <span class="tag">Docker Compose</span><span class="tag">pytest / vitest</span>
+    <span class="tag">Python</span><span class="tag">LangChain</span><span class="tag">LangGraph</span>
+    <span class="tag">Azure OpenAI</span><span class="tag">FastAPI</span><span class="tag">MongoDB</span>
+    <span class="tag">Langfuse</span><span class="tag">Docker Compose</span><span class="tag">pytest</span>
   </div>
 
   <a class="backlink" href="../#work">← All projects</a>

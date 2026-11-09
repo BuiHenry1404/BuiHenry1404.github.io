@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Bùi Henry — AI Engineer</title>
-<meta name="description" content="AI Engineer building production LLM agents: grounding, retrieval, tool calling and guardrails. Python, FastAPI, LangGraph, MCP.">
+<meta name="description" content="AI Engineer building LLM agents for real software-development problems: multi-agent orchestration, MCP tools, retrieval, human-in-the-loop and guardrails. Python, LangChain, LangGraph.">
 <meta property="og:title" content="Bùi Henry — AI Engineer">
-<meta property="og:description" content="AI Engineer building production LLM agents: grounding, retrieval, tool calling and guardrails. Python, FastAPI, LangGraph, MCP.">
+<meta property="og:description" content="AI Engineer building LLM agents for real software-development problems: multi-agent orchestration, MCP tools, retrieval, human-in-the-loop and guardrails. Python, LangChain, LangGraph.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://buihenry1404.github.io">
 <meta property="og:image" content="https://buihenry1404.github.io/assets/henry.jpg">
@@ -36,7 +36,7 @@
     <div>
       <h1>Bùi Henry</h1>
       <div class="hero__role">AI ENGINEER</div>
-      <p class="hero__lede">I build LLM agents in Python and FastAPI that answer from real source code: parsers and MCP tools give the model facts, and code checks its output before anything is saved.</p>
+      <p class="hero__lede">I build AI agents for real software-development problems — understanding million-line legacy codebases, automating documentation, and letting teams hand work to agents inside the tools they already use. Agents that answer from facts, act only with confirmation, and actually get adopted.</p>
       <div class="btns">
         <a class="btn btn--primary" href="#work">See the work</a>
         <a class="btn btn--ghost" href="#contact">Get in touch</a>
@@ -52,20 +52,20 @@
 <div class="wrap">
   <div class="stats reveal">
     <div class="stat">
-      <div class="stat__n">−60%</div>
-      <div class="stat__l">hallucinations on a COBOL maintenance agent</div>
+      <div class="stat__n">50→20%</div>
+      <div class="stat__l">unsupported answers on a COBOL maintenance agent</div>
     </div>
     <div class="stat">
-      <div class="stat__n">−20–30%</div>
-      <div class="stat__l">context tokens per code lookup</div>
+      <div class="stat__n">60→90%</div>
+      <div class="stat__l">retrieval recall on bug-fix queries for coding agents</div>
     </div>
     <div class="stat">
       <div class="stat__n">50→80%</div>
       <div class="stat__l">documents usable on the first run, 9-step agent workflow</div>
     </div>
     <div class="stat">
-      <div class="stat__n">2+ yrs</div>
-      <div class="stat__l">building agents at FPT Software</div>
+      <div class="stat__n">4</div>
+      <div class="stat__l">projects that reached an MVP/demo faster with the SDLC agents</div>
     </div>
   </div>
 </div>
@@ -79,22 +79,22 @@
       <a class="card reveal" href="projects/sdlc-platform.html">
         <div class="card__meta">FPT Software · Apr 2026 – present</div>
         <div class="card__t">A multi-agent SDLC platform</div>
-        <p class="card__d">Six SDLC agents and a 9-step workflow that turns a rough idea into requirements, design and a mockup — plus the Azure DevOps integration that puts it where developers work.</p>
+        <p class="card__d">Six SDLC agents and a 9-step workflow that turns a rough idea into requirements, design and a mockup — plus the Azure DevOps integration that puts agents where developers work, and onboarding projects onto it.</p>
         <div class="card__k">50% → 80% usable on the first run →</div>
       </a>
 
       <a class="card reveal" href="projects/code-retrieval.html">
         <div class="card__meta">FPT Software · Jun – Sep 2026</div>
-        <div class="card__t">Retrieval for coding agents</div>
-        <p class="card__d">Benchmarked regex, a Tree-sitter code graph and embedding search over a 3M-line monorepo. The winner was cheaper — and measurably worse at one thing.</p>
-        <div class="card__k">−20–30% token cost →</div>
+        <div class="card__t">Hybrid retrieval for coding agents</div>
+        <p class="card__d">Benchmarked regex, a code graph and embedding search over 15–20 repos. Embeddings were cheapest but missed real program flow, so I built hybrid retrieval with re-ranking — now the team default.</p>
+        <div class="card__k">60% → 90% recall →</div>
       </a>
 
       <a class="card reveal" href="projects/mainframe-agent.html">
         <div class="card__meta">FPT Software · Nov 2025 – Apr 2026</div>
         <div class="card__t">Grounding an agent in COBOL</div>
-        <p class="card__d">ANTLR4 parsers turn COBOL/JCL/CopyBook into structured JSON; MCP tools let the LLM query real dependencies instead of guessing.</p>
-        <div class="card__k">−60% hallucinations →</div>
+        <p class="card__d">ANTLR4 parsers turn COBOL/JCL/CopyBook into structured JSON; MCP tools and a graph + vector memory let the LLM query real dependencies instead of guessing.</p>
+        <div class="card__k">~50% → ~20% unsupported answers →</div>
       </a>
     </div>
   </div>
@@ -102,15 +102,22 @@
 
 <section id="personal">
   <div class="wrap">
-    <h2 class="h2" data-n="02.">Personal project</h2>
+    <h2 class="h2" data-n="02.">Personal projects</h2>
     <p class="sub">Built end to end, outside work.</p>
     <div class="cards">
 
       <a class="card reveal" href="projects/salona.html">
-        <div class="card__meta">Personal · Aug 2026</div>
-        <div class="card__t">A booking agent with an architectural guardrail</div>
-        <p class="card__d">The agent calls seven tools to find open slots, but the write path is out of its reach: a deterministic node commits from the database, and a code guard checks every reply.</p>
-        <div class="card__k">No write tool for the LLM →</div>
+        <div class="card__meta">Personal · Aug 2026 – present</div>
+        <div class="card__t">A booking agent that cannot invent a booking</div>
+        <p class="card__d">An orchestrator and three sub-agents on LangChain + LangGraph. The LLM can only propose; the customer confirms, code commits, and a code guardrail checks every reply.</p>
+        <div class="card__k">No write path for the LLM →</div>
+      </a>
+
+      <a class="card reveal" href="https://github.com/BuiHenry1404/ai-agent-study-planning" target="_blank" rel="noopener">
+        <div class="card__meta">Personal · Jul – Aug 2025</div>
+        <div class="card__t">AI Study Planner</div>
+        <p class="card__d">A Microsoft AutoGen group chat that turns a free-text study goal into a Google Calendar schedule, with turn caps, saved session state and real-time streaming over Socket.IO.</p>
+        <div class="card__k">Source on GitHub ↗</div>
       </a>
     </div>
   </div>
@@ -122,12 +129,16 @@
     <p class="sub">What I reach for, roughly in order of how much I use it.</p>
     <div class="skills">
       <div class="skill">
-        <div class="skill__k">AI / LLM</div>
-        <div class="skill__v">LangGraph, LangChain, AutoGen · multi-agent orchestration · tool calling · MCP (Model Context Protocol) · RAG, retrieval &amp; embedding search · long-term agent memory (Neo4j + Qdrant) · prompt &amp; context engineering · structured output · guardrails · LLM evaluation · Azure OpenAI · Langfuse</div>
+        <div class="skill__k">AI agents</div>
+        <div class="skill__v">LangChain, LangGraph, Microsoft AutoGen · multi-agent orchestration · tool calling · MCP (Model Context Protocol) · human-in-the-loop · guardrails · agent memory · context engineering · structured output · model routing</div>
+      </div>
+      <div class="skill">
+        <div class="skill__k">Retrieval &amp; eval</div>
+        <div class="skill__v">hybrid retrieval · re-ranking · knowledge graph · embedding search · pgvector · Neo4j · RAG · LLM evaluation · Langfuse (observability) · token / cost profiling · Azure OpenAI</div>
       </div>
       <div class="skill">
         <div class="skill__k">Backend</div>
-        <div class="skill__v">Python · FastAPI · REST APIs · Socket.IO · Redis · PostgreSQL / Supabase · MongoDB · Neo4j · Qdrant · pgvector · Docker</div>
+        <div class="skill__v">Python (main), Java · FastAPI · REST APIs · Socket.IO · JWT · Spring Boot · PostgreSQL / Supabase · MongoDB · Redis · MySQL · Docker</div>
       </div>
       <div class="skill">
         <div class="skill__k">Parsing / tooling</div>

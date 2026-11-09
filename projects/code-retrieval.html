@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Benchmarking retrieval for coding agents · Bùi Henry</title>
-<meta name="description" content="Benchmarked regex, a Tree-sitter code graph and embedding search over a 3M-line monorepo. The cheapest option was measurably worse at one thing — and saying so was the deliverable.">
-<meta property="og:title" content="Benchmarking retrieval for coding agents · Bùi Henry">
-<meta property="og:description" content="Benchmarked regex, a Tree-sitter code graph and embedding search over a 3M-line monorepo. The cheapest option was measurably worse at one thing — and saying so was the deliverable.">
+<title>Hybrid retrieval for coding agents · Bùi Henry</title>
+<meta name="description" content="Benchmarked regex, a code graph and embedding search over 15–20 repos, then built hybrid retrieval with re-ranking. Recall on bug-fix queries rose from ~60% to ~90%, and the team adopted it as the default.">
+<meta property="og:title" content="Hybrid retrieval for coding agents · Bùi Henry">
+<meta property="og:description" content="Benchmarked regex, a code graph and embedding search over 15–20 repos, then built hybrid retrieval with re-ranking. Recall on bug-fix queries rose from ~60% to ~90%, and the team adopted it as the default.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://buihenry1404.github.io/projects/code-retrieval.html">
 <meta property="og:image" content="https://buihenry1404.github.io/assets/henry.jpg">
@@ -32,72 +32,79 @@
 </nav>
 
 <article class="wrap article">
-  <h1>What a coding agent should read, and what that costs</h1>
+  <h1>What a coding agent should read, and how to find it</h1>
   <div class="article__meta">Internal developer platform · FPT Software · Jun – Sep 2026</div>
 
 <p class="lead">
     Code search sounds like a solved problem until an LLM is the one searching. The agent does
     not want a list of files, it wants the right few hundred lines — and every extra line is
-    money and latency. I benchmarked three ways of finding them.
+    money and latency. Coding agents reach this layer through MCP tools.
   </p>
 
   <h2>The problem</h2>
   <p>
-    The platform's coding agent works over large internal codebases: 15–20 repositories indexed,
-    one of them a <strong>3-million-line monorepo</strong>. Retrieval quality decides everything
-    downstream. Too little context and the agent answers about code it never saw; too much and
-    each query costs more and takes longer, without necessarily being more correct.
-  </p>
-  <p>
-    The team had a Tree-sitter code graph that was precise but slow to query at that scale. The
-    question was whether something else would serve the agent better.
+    The platform's coding agent works over large internal codebases: <strong>15–20
+    repositories</strong> indexed, the largest a <strong>3-million-line monorepo</strong>.
+    Retrieval quality decides everything downstream. Too little context and the agent answers
+    about code it never saw; too much and each query costs more and takes longer, without
+    necessarily being more correct.
   </p>
 
   <h2>The benchmark</h2>
   <p>I compared three retrieval strategies on a fixed internal query set:</p>
   <ul>
     <li><strong>regex / grep</strong> — no index, pure text matching.</li>
-    <li><strong>Tree-sitter code graph (Neo4j)</strong> — parses code into a structural graph stored in Neo4j; queries follow real symbol and call relationships.</li>
+    <li><strong>Code graph (Tree-sitter → Neo4j)</strong> — code parsed into a structural graph; queries follow real symbol and call relationships.</li>
     <li><strong>Embedding search (CodebaseMemory, pgvector)</strong> — semantic similarity over chunked code.</li>
   </ul>
   <p>Scored on three axes, because optimising any one alone gives the wrong answer:</p>
   <ul>
-    <li><strong>Query latency</strong> — how long the agent waits.</li>
-    <li><strong>Flow correctness</strong> — does the returned code reflect the program's actual control flow.</li>
     <li><strong>Token cost</strong> — how much context is sent to the model per query.</li>
+    <li><strong>Query latency</strong> — how long the agent waits.</li>
+    <li><strong>Flow correctness</strong> — does the returned code sit on the program's actual execution path.</li>
   </ul>
 
   <h2>What came out</h2>
   <p>
-    Embedding search won on the two axes that get measured most easily. It returned context in a
-    fraction of the graph's query time, and cut context tokens sent to the agent by
-    <strong>20–30% compared with regex-based file retrieval</strong> — a direct, per-query saving
-    that compounds at 3M-LoC scale. We shipped it as the default retrieval path.
+    Embedding search won on the two axes that are easiest to measure. It answered in a fraction
+    of the graph's query time and cut the context sent to the agent by <strong>20–30%</strong>
+    compared with regex-based file retrieval — a per-query saving that compounds at 3M-line scale.
+  </p>
+  <p>
+    But on real bug-fix tasks it was worse. Semantic retrieval <strong>drifts from the program's
+    actual control flow</strong>: it returns code that reads like the right answer rather than
+    code that runs on the path where the bug is. The graph stays exact there, because it follows
+    structure rather than similarity. A speed benchmark alone would have reported a clean win and
+    quietly degraded the agent on exactly the task people care about most.
   </p>
 
-  <div class="callout">
-    <p>
-      <strong>But it was worse at something.</strong> On real bug-fix tasks, semantic retrieval
-      drifts from the program's actual control flow — it returns code that reads like the right
-      answer rather than code that is on the execution path. The Tree-sitter graph stays exact
-      there, because it follows structure rather than similarity.
-    </p>
+  <h2>Hybrid retrieval with re-ranking</h2>
+  <p>
+    So instead of picking a winner, I built <strong>hybrid retrieval</strong>: regex, the code
+    graph and embedding search each return candidates, and the merged list is
+    <strong>re-ranked before it reaches the agent</strong>. The agent gets one short list in which
+    code on the real execution path comes first, instead of whichever method happened to answer.
+  </p>
+  <div class="flow">
+    <span>query</span> <b>→</b>
+    <span>regex</span> <b>+</b>
+    <span>code graph</span> <b>+</b>
+    <span>embeddings</span> <b>→</b>
+    <span>re-rank</span> <b>→</b>
+    <span>agent (via MCP)</span>
   </div>
-
   <p>
-    That distinction is easy to miss, and expensive to miss. A speed benchmark alone would have
-    reported a clean win and quietly degraded the agent on exactly the task people care about
-    most. So the recommendation was not "replace one with the other" but
-    <strong>hybrid retrieval</strong>: the graph for dependency and control-flow questions,
-    embeddings for broad semantic lookup.
+    On bug-fix queries, <strong>recall rose from ~60% to ~90%</strong> — the right code to change
+    is now in what the agent reads nine times out of ten. The team adopted hybrid retrieval as the
+    <strong>default approach</strong>.
   </p>
 
-  <h2>Making it measurable afterwards</h2>
+  <h2>Making it measurable</h2>
   <p>
-    The most durable part of this work is not the choice, it is the harness. I built a
-    <strong>fixed evaluation set plus a scoring script</strong>, so any later change to
-    retrieval is compared against the same queries and produces a number. Before that, "is this
-    better?" was answered by whoever had most recently tried it.
+    The most durable part of this work is the harness. I built a <strong>fixed evaluation set
+    for code search plus a scoring script</strong>; it is what measured the ~60% → ~90% gain, and
+    every later change to retrieval is scored against the same queries before release. Before
+    that, &ldquo;is this better?&rdquo; was answered by whoever had most recently tried it.
   </p>
   <p>
     That matters for retrieval in particular, because changes here are hard to feel. Tuning a
@@ -108,18 +115,18 @@
   <h2>Results</h2>
   <table class="res">
     <tr><th>Measure</th><th>Result</th></tr>
-    <tr><td>Context tokens per query (vs. regex retrieval)</td><td>−20–30%</td></tr>
-    <tr><td>Query latency vs. Tree-sitter graph</td><td>several times faster</td></tr>
-    <tr><td>Scope benchmarked</td><td>15–20 repos, incl. 3M-LoC monorepo</td></tr>
-    <tr><td>Known limitation, documented</td><td>flow drift on bug-fix tasks</td></tr>
-    <tr><td>Evaluation harness</td><td>fixed query set + scoring script</td></tr>
+    <tr><td>Recall on bug-fix queries (hybrid + re-ranking)</td><td>~60% → ~90%</td></tr>
+    <tr><td>Context tokens per code lookup (embedding vs. regex)</td><td>−20–30%</td></tr>
+    <tr><td>Scope benchmarked</td><td>15–20 repos, largest 3M lines</td></tr>
+    <tr><td>Adoption</td><td>team default retrieval approach</td></tr>
+    <tr><td>Evaluation harness</td><td>fixed query set + scoring script, run before every release</td></tr>
   </table>
 
   <h2>Stack</h2>
   <div class="tags">
-    <span class="tag">Python</span><span class="tag">Tree-sitter</span>
-    <span class="tag">CodebaseMemory</span><span class="tag">Embedding models</span>
-    <span class="tag">Neo4j</span><span class="tag">pgvector</span><span class="tag">Hybrid search</span>
+    <span class="tag">Python</span><span class="tag">Tree-sitter</span><span class="tag">Neo4j</span>
+    <span class="tag">pgvector</span><span class="tag">Embedding models</span>
+    <span class="tag">Hybrid search &amp; re-ranking</span><span class="tag">MCP</span>
     <span class="tag">RAG</span><span class="tag">Token / cost profiling</span>
   </div>
 

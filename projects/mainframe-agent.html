@@ -83,6 +83,14 @@
     varies by shop. A parser that silently skips what it does not recognise produces a
     dependency graph with holes in it — and holes are exactly where an agent starts inventing.
   </p>
+  <p>
+    The parsers were not new to this project. On <strong>Mainframe Studio</strong> (Aug 2024 –
+    Aug 2025) I had already optimized them, <strong>cutting parse time for a large codebase from
+    1h30 to 45 minutes</strong>: grammar rules streamlined around how mainframe code is actually
+    structured, large codebases run on the Java target, and the Python parser moved onto the C++
+    runtime. That speed is what made re-parsing a 3M-line estate a routine step rather than an
+    overnight job.
+  </p>
 
   <h3>2. MCP tools over the parsed data</h3>
   <p>
@@ -123,13 +131,13 @@
   <div class="flow">
     <span>question</span> <b>→</b>
     <span>graph query (Neo4j)</span> <b>+</b>
-    <span>semantic retrieval (Qdrant)</span> <b>+</b>
+    <span>semantic retrieval (pgvector)</span> <b>+</b>
     <span>fetch source</span>
     <b>→</b> <span>LLM synthesis</span>
   </div>
   <ul>
     <li><strong>A Neo4j knowledge graph</strong> holds the exact structure the parsers produced — which program reads which field, which job runs which program. This is where a dependency question gets an answer that is true rather than plausible.</li>
-    <li><strong>A Qdrant vector store</strong> covers the semantic half: finding the relevant area when the question does not name an identifier the graph can key on.</li>
+    <li><strong>pgvector</strong> covers the semantic half: embeddings over the parsed mainframe code give it meaning beyond identifiers, so the right area is found even when the question does not name anything the graph can key on.</li>
     <li><strong>The source itself</strong> is fetched last, so the model reasons over real code rather than a summary of it.</li>
   </ul>
   <p>
@@ -150,7 +158,7 @@
     <tr><th>Measure</th><th>How it was measured</th><th>Result</th></tr>
     <tr>
       <td>Ungrounded answers</td>
-      <td>10–20 question benchmark over the public AWS Mainframe Modernization CardDemo codebase</td>
+      <td>Question benchmark over the public AWS Mainframe Modernization CardDemo codebase</td>
       <td>~50% → ~20%</td>
     </tr>
     <tr>
@@ -173,6 +181,11 @@
       <td>Generated diagrams vs. real program flow</td>
       <td>70–80%</td>
     </tr>
+    <tr>
+      <td>Parse time, large codebase</td>
+      <td>Before/after the parser optimization (Mainframe Studio)</td>
+      <td>1h30 → 45 min</td>
+    </tr>
   </table>
   <p>
     Read the headline number either way: grounded answers rose from ~50% to ~80%, which is the
@@ -189,7 +202,7 @@
   <div class="tags">
     <span class="tag">Python</span><span class="tag">ANTLR4</span><span class="tag">MCP</span>
     <span class="tag">LangGraph</span><span class="tag">LangChain</span><span class="tag">FastAPI</span>
-    <span class="tag">Neo4j</span><span class="tag">Qdrant</span><span class="tag">RAG</span>
+    <span class="tag">Neo4j</span><span class="tag">pgvector</span><span class="tag">RAG</span>
     <span class="tag">COBOL / JCL / CopyBook</span><span class="tag">Docker</span>
   </div>
 

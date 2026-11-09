@@ -36,9 +36,10 @@
   <div class="article__meta">Internal developer platform · FPT Software · Apr 2026 – present</div>
 
 <p class="lead">
-    The platform runs multi-agent "swarms" across the software development lifecycle. I work on two
-    parts of it: the agents that produce the documents, and the Azure DevOps integration that
-    puts them in front of developers without asking anyone to change tools.
+    The platform runs multi-agent "swarms" across the software development lifecycle. I work on three
+    parts of it: the agents that produce the documents, the Azure DevOps integration that puts
+    them in front of developers without asking anyone to change tools, and onboarding projects
+    onto the platform.
   </p>
 
   <h2>Part 1 — Making a document workflow finish</h2>
@@ -101,8 +102,11 @@
     adversarial validation checklists.
   </p>
   <p>
-    The agents are now used by <strong>4 projects</strong>, which hand them the first pass at
-    brainstorming features and drafting requirements from user stories and use cases.
+    Every output is built to be traced: MoSCoW priorities and stable IDs carry from a user
+    story through requirements, design and mockup, with C4, sequence and ERD diagrams along the
+    way. The agents are now used by <strong>4 projects</strong> and helped each of them reach an
+    <strong>MVP or demo faster</strong> — they hand the agents the first pass at brainstorming
+    features and drafting requirements from user stories and use cases.
   </p>
   <div class="callout">
     <p>
@@ -147,15 +151,30 @@
   <p>
     Jobs are dispatched to desktop workers, which claim them, run the agent and report back.
     Because the same mention can arrive more than once — webhooks retry — the dispatch path is
-    built so a request executes exactly once regardless.
+    built so a request executes exactly once regardless. Long-running jobs recover on their own:
+    stuck jobs, dropped connections and duplicate runs are handled automatically, so about
+    <strong>80% of agent jobs finish without anyone watching them</strong>.
   </p>
 
   <h3>Security and deployment reach</h3>
   <p>
     Some customers require that everything stays entirely inside their own infrastructure. I
     added support for <strong>self-hosted Azure DevOps Server</strong> alongside the cloud
-    version, so their work items and code references never leave their own network. Credentials
-    are redacted from logs and traces on both paths.
+    version, so their work items and code references never leave their own network. Access
+    tokens are masked in logs on both paths.
+  </p>
+
+  <h2>Part 3 — Onboarding projects (Forward Deployed Engineer)</h2>
+  <p>
+    Agents are only as good as the project context they can read, and on most projects that
+    context was scattered across files, chats and people's heads. Working as a
+    <strong>Forward Deployed Engineer</strong>, I onboarded <strong>2 projects</strong>: their
+    <strong>~100 scattered documents</strong> (about 50 each) moved into Azure DevOps Wiki under
+    a standard page tree and page templates, so every agent reads the same shared project context.
+  </p>
+  <p>
+    Then I worked with each team to roll out agent workflows in their day-to-day process — which
+    steps to hand to an agent, and where a human still signs off.
   </p>
 
   <h2>Results</h2>
@@ -163,10 +182,11 @@
     <tr><th>Measure</th><th>Result</th></tr>
     <tr><td>Runs whose documents were usable on the first run</td><td>~50% → ~80%</td></tr>
     <tr><td>Cost per workflow run</td><td>~45% lower</td></tr>
-    <tr><td>Projects using the SDLC agents</td><td>4</td></tr>
+    <tr><td>Projects using the SDLC agents</td><td>4, each reaching an MVP/demo faster</td></tr>
     <tr><td>Agent jobs finishing without human intervention</td><td>~80%</td></tr>
     <tr><td>Manual steps to move AI output into Azure DevOps</td><td>5–8 → 1 (~85% fewer)</td></tr>
     <tr><td>Customer data on customer infrastructure</td><td>on-prem supported</td></tr>
+    <tr><td>Projects onboarded as Forward Deployed Engineer</td><td>2 (~100 documents → shared wiki context)</td></tr>
   </table>
   <p>
     On a repository with 22 contributors I am the third-largest by commit count — the platform
