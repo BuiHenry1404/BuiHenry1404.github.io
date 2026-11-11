@@ -73,6 +73,12 @@
     model tự nghĩ ra.
   </p>
   <p>
+    Agent vẫn có thể lấy nhầm số, nên code đối chiếu từng con số trong câu trả lời với database. Nếu
+    một số không khớp, code báo lỗi lại cho model, model gọi lại tool với tham số đúng — tối đa ba
+    lần. Quyền gọi tool được phân theo user ID và vai trò, nên trưởng phòng kinh doanh xem doanh thu,
+    còn kế toán xem chi phí.
+  </p>
+  <p>
     Để kiểm tra, tôi xây một <strong>bộ eval gồm 250 câu hỏi trên 12 tháng</strong> dữ liệu thật, rồi
     so câu trả lời của agent với các báo cáo công ty đã có của những tháng đó. Agent trả lời đúng
     khoảng <strong>90%</strong>.
@@ -83,7 +89,8 @@
     <tr><th>Chỉ số</th><th>Kết quả</th></tr>
     <tr><td>Thời gian ra một báo cáo</td><td>3 ngày (làm tay) → 1 ngày</td></tr>
     <tr><td>Độ đúng câu trả lời</td><td>~90% trên 250 câu hỏi, 12 tháng</td></tr>
-    <tr><td>Cách tạo ra số liệu</td><td>chỉ qua tool SQL viết sẵn, không để model tự viết SQL</td></tr>
+    <tr><td>Cách tạo ra số liệu</td><td>chỉ qua tool SQL viết sẵn; code đối chiếu lại với DB, model sửa tối đa 3 lần</td></tr>
+    <tr><td>Phân quyền</td><td>theo user ID và vai trò</td></tr>
     <tr><td>Trạng thái</td><td>đã bàn giao cho khách, dùng hằng ngày</td></tr>
   </table>
 

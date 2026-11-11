@@ -73,6 +73,12 @@
     through one of these tools, not from the model.
   </p>
   <p>
+    The agent can still pick a wrong number, so code checks every figure in an answer against the
+    database. If a figure does not match, the code sends the error back to the model, which calls the
+    tool again with corrected parameters — up to three times. Access to the tools is scoped by user ID
+    and role, so the sales lead sees revenue and the accountant sees cost.
+  </p>
+  <p>
     To check how well it did, I built an <strong>eval set of 250 questions across 12 months</strong>
     of real data, and compared the agent's answers with the reports the company already had for those
     months. The agent answered about <strong>90%</strong> of them correctly.
@@ -83,7 +89,8 @@
     <tr><th>Measure</th><th>Result</th></tr>
     <tr><td>Time to get a report</td><td>3 days (manual) → 1 day</td></tr>
     <tr><td>Answer accuracy</td><td>~90% on 250 questions across 12 months</td></tr>
-    <tr><td>How numbers are produced</td><td>pre-written SQL tools only, never model-written SQL</td></tr>
+    <tr><td>How numbers are produced</td><td>pre-written SQL tools; code re-checks against the DB, model corrects (max 3)</td></tr>
+    <tr><td>Access control</td><td>by user ID and role</td></tr>
     <tr><td>Status</td><td>shipped to the client, in daily use</td></tr>
   </table>
 
