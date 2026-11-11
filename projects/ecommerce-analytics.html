@@ -52,13 +52,15 @@
 
   <h2>What it does</h2>
   <p>
-    For a quick question — the sales lead asks about revenue by day, month or year, the accountant
-    asks about cost — a single agent answers in the chat through SQL tools.
+    An orchestrator reads every message. For a quick question — the sales lead asks about revenue by
+    day, month or year, the accountant asks about cost — it routes the task to the right agent, which
+    answers in the chat through SQL tools.
   </p>
   <p>
-    A full report is more work, so it runs as a chain of agents that hand work to each other: one
-    lists the invoices and aggregates them by month, the next builds the report, another writes it up,
-    and a last one turns it into presentation slides.
+    A full report is more work, so it runs as a swarm: each agent outputs JSON, the next takes that as
+    its input, and the work flows down the chain. One agent lists the invoices and aggregates them by
+    month, the next builds the report, another writes it up, and a last one turns it into presentation
+    slides.
   </p>
   <div class="flow">
     <span>report request</span> <b>→</b>

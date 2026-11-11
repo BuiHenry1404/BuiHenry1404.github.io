@@ -51,13 +51,14 @@
 
   <h2>Agent làm gì</h2>
   <p>
-    Câu hỏi nhanh — trưởng phòng kinh doanh hỏi doanh thu theo ngày, tháng hoặc năm, kế toán hỏi chi
-    phí — thì một agent trả lời ngay trong khung chat qua các tool SQL.
+    Một orchestrator đọc mọi tin nhắn. Câu hỏi nhanh — trưởng phòng kinh doanh hỏi doanh thu theo
+    ngày, tháng hoặc năm, kế toán hỏi chi phí — thì nó giao task cho agent cần thiết, agent đó trả
+    lời trong khung chat qua các tool SQL.
   </p>
   <p>
-    Làm một báo cáo đầy đủ thì nặng hơn, nên nó chạy thành một chuỗi agent tự chuyển việc cho nhau:
-    một agent liệt kê hoá đơn và tổng hợp theo tháng, agent kế tạo báo cáo, agent khác viết nội dung,
-    và agent cuối làm slide thuyết trình.
+    Làm một báo cáo đầy đủ thì nặng hơn, nên nó chạy thành một swarm: mỗi agent xuất ra JSON, agent
+    kế lấy JSON đó làm input, việc chạy dần xuống chuỗi. Một agent liệt kê hoá đơn và tổng hợp theo
+    tháng, agent kế tạo báo cáo, agent khác viết nội dung, và agent cuối làm slide thuyết trình.
   </p>
   <div class="flow">
     <span>yêu cầu báo cáo</span> <b>→</b>
