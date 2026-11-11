@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Analytics agent for an e-commerce business · Bùi Henry</title>
+<meta name="description" content="An AI agent that answers revenue and cost questions over an e-commerce platform's sales data and builds chart reports. Reporting that took an analyst 3 days now takes 1.">
+<meta property="og:title" content="Analytics agent for an e-commerce business · Bùi Henry">
+<meta property="og:description" content="An AI agent that answers revenue and cost questions over an e-commerce platform's sales data and builds chart reports. Reporting that took an analyst 3 days now takes 1.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://buihenry1404.github.io/projects/ecommerce-analytics.html">
+<meta property="og:image" content="https://buihenry1404.github.io/assets/henry.jpg">
+<link rel="canonical" href="https://buihenry1404.github.io/projects/ecommerce-analytics.html">
+<link rel="alternate" hreflang="en" href="https://buihenry1404.github.io/projects/ecommerce-analytics.html">
+<link rel="alternate" hreflang="vi" href="https://buihenry1404.github.io/vi/projects/ecommerce-analytics.html">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%230B1120'/><text x='50' y='72' font-size='64' font-family='monospace' font-weight='bold' fill='%2322C55E' text-anchor='middle'>H</text></svg>">
+<link rel="stylesheet" href="../assets/style.css">
+<noscript><style>.reveal{opacity:1!important;transform:none!important}</style></noscript>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap nav__inner">
+    <a class="nav__home" href="../">~/buihenry</a>
+    <div class="nav__links">
+      <a href="../#work">Experience</a>
+      <a href="../#skills">Skills</a>
+      <a href="../#contact">Contact</a>
+      <span class="lang"><a href="../" hreflang="en" aria-current="true">EN</a><a href="../vi/projects/ecommerce-analytics.html" hreflang="vi">VI</a></span>
+    </div>
+  </div>
+</nav>
+
+<article class="wrap article">
+  <h1>Analytics agent for an e-commerce business</h1>
+  <div class="article__meta">E-commerce platform · FPT Software · Jun – Sep 2026</div>
+
+<p class="lead">
+    An AI agent for an e-commerce company that runs its own online platform. The sales lead and the
+    accountant ask about revenue and cost in plain language, and the agent answers from the sales
+    database and builds reports with charts. It is used every day at the client.
+  </p>
+
+  <h2>The problem</h2>
+  <p>
+    All the sales and invoice data was already in the database, but getting answers out of it was
+    slow. When the sales lead or the accountant needed numbers, an analyst had to pull the data
+    together by hand and build a report — about <strong>three days</strong> of work each time. Any
+    new question meant waiting for the next report.
+  </p>
+
+  <h2>What it does</h2>
+  <p>
+    The sales lead asks about revenue by day, month or year. The accountant asks about cost. The
+    agent answers in the chat, and it can also produce a report with charts.
+  </p>
+  <div class="flow">
+    <span>question in plain language</span> <b>→</b>
+    <span>agent</span> <b>→</b>
+    <span>SQL tools</span> <b>→</b>
+    <span>answer + chart report</span>
+  </div>
+  <p>
+    I was the only engineer on the AI and backend side, in a team of four (the others were a tester,
+    a project manager and a business analyst).
+  </p>
+
+  <h2>Keeping the numbers correct</h2>
+  <p>
+    Numbers have to be exact, so the AI does not write its own SQL. It can only call
+    <strong>tools with SQL written in advance</strong> — for example, list the invoices for a day or
+    a month, or total a month's revenue. Every number in an answer comes straight from the database
+    through one of these tools, not from the model.
+  </p>
+  <p>
+    To check how well it did, I built an <strong>eval set of 250 questions across 12 months</strong>
+    of real data, and compared the agent's answers with the reports the company already had for those
+    months. The agent answered about <strong>90%</strong> of them correctly.
+  </p>
+
+  <h2>Results</h2>
+  <table class="res">
+    <tr><th>Measure</th><th>Result</th></tr>
+    <tr><td>Time to get a report</td><td>3 days (manual) → 1 day</td></tr>
+    <tr><td>Answer accuracy</td><td>~90% on 250 questions across 12 months</td></tr>
+    <tr><td>How numbers are produced</td><td>pre-written SQL tools only, never model-written SQL</td></tr>
+    <tr><td>Status</td><td>shipped to the client, in daily use</td></tr>
+  </table>
+
+  <h2>Stack</h2>
+  <div class="tags">
+    <span class="tag">Python</span><span class="tag">LangChain</span><span class="tag">LangGraph</span>
+    <span class="tag">Azure OpenAI (GPT-5.4-mini)</span><span class="tag">PostgreSQL</span>
+    <span class="tag">SQL tools</span><span class="tag">LLM evaluation</span>
+  </div>
+
+  <a class="backlink" href="../#work">← All projects</a>
+</article>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Bùi Henry</span>
+    <span><a href="https://mail.google.com/mail/?view=cm&amp;fs=1&amp;to=buihenry1404@gmail.com&amp;su=Opportunity%20for%20B%C3%B9i%20Henry" target="_blank" rel="noopener">buihenry1404@gmail.com</a></span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var rm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var els = document.querySelectorAll('.reveal');
+  if (!rm && 'IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { rootMargin: '0px 0px -10% 0px' });
+    els.forEach(function (el) { io.observe(el); });
+  } else {
+    els.forEach(function (el) { el.classList.add('in'); });
+  }
+
+})();
+</script>
+</body>
+</html>

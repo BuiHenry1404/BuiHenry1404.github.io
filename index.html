@@ -36,7 +36,7 @@
     <div>
       <h1>Bùi Henry</h1>
       <div class="hero__role">AI ENGINEER</div>
-      <p class="hero__lede">I build AI agents for real software-development problems — understanding million-line legacy codebases, automating documentation, and letting teams hand work to agents inside the tools they already use. Agents that answer from facts, act only with confirmation, and actually get adopted.</p>
+      <p class="hero__lede">I build AI agents that help software teams: reading large legacy codebases, writing project documents, and taking tasks straight from Azure DevOps. I focus on agents that give correct answers, ask before they act, and that teams keep using.</p>
       <div class="btns">
         <a class="btn btn--primary" href="#work">See the work</a>
         <a class="btn btn--ghost" href="#contact">Get in touch</a>
@@ -73,28 +73,28 @@
 <section id="work">
   <div class="wrap">
     <h2 class="h2" data-n="01.">Work experience</h2>
-    <p class="sub">Three projects at FPT Software, each with the design decision that mattered and the number it moved.</p>
+    <p class="sub">Three projects at FPT Software: what I built and what it improved.</p>
     <div class="cards">
 
       <a class="card reveal" href="projects/sdlc-platform.html">
         <div class="card__meta">FPT Software · Apr 2026 – present</div>
-        <div class="card__t">A multi-agent SDLC platform</div>
-        <p class="card__d">Six SDLC agents and a 9-step workflow that turns a rough idea into requirements, design and a mockup — plus the Azure DevOps integration that puts agents where developers work, and onboarding projects onto it.</p>
+        <div class="card__t">AgentBox: AI agents for the SDLC</div>
+        <p class="card__d">Six AI agents and a 9-step workflow that turn a product idea into requirements, design and a mockup. Developers use them directly from Azure DevOps.</p>
         <div class="card__k">50% → 80% usable on the first run →</div>
       </a>
 
-      <a class="card reveal" href="projects/code-retrieval.html">
+      <a class="card reveal" href="projects/ecommerce-analytics.html">
         <div class="card__meta">FPT Software · Jun – Sep 2026</div>
-        <div class="card__t">Hybrid retrieval for coding agents</div>
-        <p class="card__d">Benchmarked regex, a code graph and embedding search over 15–20 repos. Embeddings were cheapest but missed real program flow, so I built hybrid retrieval with re-ranking — now the team default.</p>
-        <div class="card__k">60% → 90% recall →</div>
+        <div class="card__t">Analytics agent for an e-commerce business</div>
+        <p class="card__d">The sales lead and accountant ask about revenue and cost in plain language, and the agent answers from the sales database and builds chart reports. In daily use at the client.</p>
+        <div class="card__k">reporting 3 days → 1 day →</div>
       </a>
 
       <a class="card reveal" href="projects/mainframe-agent.html">
         <div class="card__meta">FPT Software · Nov 2025 – Apr 2026</div>
-        <div class="card__t">Grounding an agent in COBOL</div>
-        <p class="card__d">ANTLR4 parsers turn COBOL/JCL/CopyBook into structured JSON; MCP tools and a graph + vector memory let the LLM query real dependencies instead of guessing.</p>
-        <div class="card__k">~50% → ~20% unsupported answers →</div>
+        <div class="card__t">xMainframe: an agent that reads real COBOL</div>
+        <p class="card__d">Parsers turn COBOL, JCL and CopyBook into structured data. The AI looks up real dependencies through MCP tools instead of guessing.</p>
+        <div class="card__k">unsupported answers ~50% → ~20% →</div>
       </a>
     </div>
   </div>
@@ -103,20 +103,20 @@
 <section id="personal">
   <div class="wrap">
     <h2 class="h2" data-n="02.">Personal projects</h2>
-    <p class="sub">Built end to end, outside work.</p>
+    <p class="sub">Built from start to finish, outside work.</p>
     <div class="cards">
 
       <a class="card reveal" href="projects/salona.html">
         <div class="card__meta">Personal · Aug 2026 – present</div>
-        <div class="card__t">A booking agent that cannot invent a booking</div>
-        <p class="card__d">An orchestrator and three sub-agents on LangChain + LangGraph. The LLM can only propose; the customer confirms, code commits, and a code guardrail checks every reply.</p>
-        <div class="card__k">No write path for the LLM →</div>
+        <div class="card__t">Salona: AI booking assistant</div>
+        <p class="card__d">One orchestrator and three sub-agents on LangChain + LangGraph. The AI only proposes a booking, the customer approves, and code saves it. Every reply is checked in code.</p>
+        <div class="card__k">AI proposes, customer approves →</div>
       </a>
 
       <a class="card reveal" href="https://github.com/BuiHenry1404/ai-agent-study-planning" target="_blank" rel="noopener">
         <div class="card__meta">Personal · Jul – Aug 2025</div>
         <div class="card__t">AI Study Planner</div>
-        <p class="card__d">A Microsoft AutoGen group chat that turns a free-text study goal into a Google Calendar schedule, with turn caps, saved session state and real-time streaming over Socket.IO.</p>
+        <p class="card__d">Several AutoGen agents work together to turn a study goal into a schedule on Google Calendar. Conversations resume where they left off, and replies stream in real time.</p>
         <div class="card__k">Source on GitHub ↗</div>
       </a>
     </div>
@@ -126,7 +126,7 @@
 <section id="skills">
   <div class="wrap">
     <h2 class="h2" data-n="03.">Skills</h2>
-    <p class="sub">What I reach for, roughly in order of how much I use it.</p>
+    <p class="sub">What I use most, roughly in order.</p>
     <div class="skills">
       <div class="skill">
         <div class="skill__k">AI agents</div>
@@ -134,7 +134,7 @@
       </div>
       <div class="skill">
         <div class="skill__k">Retrieval &amp; eval</div>
-        <div class="skill__v">hybrid retrieval · re-ranking · knowledge graph · embedding search · pgvector · Neo4j · RAG · LLM evaluation · Langfuse (observability) · token / cost profiling · Azure OpenAI</div>
+        <div class="skill__v">knowledge graph · embedding search · pgvector · Neo4j · RAG · LLM evaluation · Langfuse (observability) · token / cost profiling · Azure OpenAI</div>
       </div>
       <div class="skill">
         <div class="skill__k">Backend</div>

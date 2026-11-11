@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Salona — agent đặt lịch không thể tự bịa lịch hẹn · Bùi Henry</title>
-<meta name="description" content="Một agent điều phối và ba agent con xây bằng LangChain + LangGraph. LLM chỉ được đề xuất lịch; khách xác nhận, code mới ghi, và mọi câu trả lời đều qua guardrail bằng code trước khi gửi.">
-<meta property="og:title" content="Salona — agent đặt lịch không thể tự bịa lịch hẹn · Bùi Henry">
-<meta property="og:description" content="Một agent điều phối và ba agent con xây bằng LangChain + LangGraph. LLM chỉ được đề xuất lịch; khách xác nhận, code mới ghi, và mọi câu trả lời đều qua guardrail bằng code trước khi gửi.">
+<title>Salona — agent đặt lịch: AI đề xuất, khách duyệt, code mới ghi · Bùi Henry</title>
+<meta name="description" content="Một agent điều phối và ba agent con xây bằng LangChain + LangGraph. AI chỉ được đề xuất lịch; khách duyệt, code mới ghi, và mọi câu trả lời đều được code kiểm tra trước khi gửi.">
+<meta property="og:title" content="Salona — agent đặt lịch: AI đề xuất, khách duyệt, code mới ghi · Bùi Henry">
+<meta property="og:description" content="Một agent điều phối và ba agent con xây bằng LangChain + LangGraph. AI chỉ được đề xuất lịch; khách duyệt, code mới ghi, và mọi câu trả lời đều được code kiểm tra trước khi gửi.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://buihenry1404.github.io/vi/projects/salona.html">
 <meta property="og:image" content="https://buihenry1404.github.io/assets/henry.jpg">
@@ -32,133 +32,129 @@
 </nav>
 
 <article class="wrap article">
-  <h1>Agent đặt lịch không thể tự bịa ra một lịch hẹn</h1>
+  <h1>Agent đặt lịch: AI chỉ đề xuất, khách duyệt, code mới ghi</h1>
   <div class="article__meta">Salona Booking · Dự án cá nhân (2 người, lead developer) · 08/2026 – nay ·
     <a href="https://github.com/BuiHenry1404/salona-booking">mã nguồn trên GitHub</a></div>
 
   <p class="lead">
-    Một lễ tân AI cho tiệm nail &amp; tóc nhỏ: khách chat để hỏi về tiệm, dịch vụ, giá, và để đặt
-    hoặc huỷ lịch. Điểm đáng chú ý là những việc mô hình <em>không</em> được phép làm.
+    Lễ tân AI cho một tiệm nail và tóc nhỏ. Khách nhắn tin để hỏi giờ mở cửa, dịch vụ, giá, và để
+    đặt hoặc huỷ lịch. Điểm quan trọng nhất trong thiết kế là những việc AI <em>không</em> được làm.
   </p>
 
-  <h2>Vấn đề khi để mô hình tự đặt lịch</h2>
+  <h2>Vì sao không để AI tự đặt lịch</h2>
   <p>
-    Trợ lý đặt lịch qua chat là một bản demo quen thuộc. Nó cũng là cách quen thuộc để gây rắc rối
-    thật: mô hình xác nhận một giờ đã có người, báo một mức giá tiệm chưa từng lấy, hoặc nói
-    &ldquo;đã đặt xong&rdquo; khi chưa có gì được ghi. Prompt giúp được một phần nhưng không giải
-    quyết được — &ldquo;không được xác nhận giờ đã kín&rdquo; là một lời dặn, không phải một bảo
-    đảm. Với chủ tiệm, đó là một khách tới cho một lịch hẹn không tồn tại.
+    Nếu AI được tự ghi lịch, sớm muộn nó sẽ sai: xác nhận một giờ đã có người đặt, báo giá mà tiệm
+    không có, hoặc nói &ldquo;đã đặt xong&rdquo; trong khi chưa lưu gì. Dặn &ldquo;không được làm vậy&rdquo;
+    trong prompt chỉ giảm lỗi chứ không chặn được. Với chủ tiệm, hậu quả là khách tới nơi mà lịch hẹn
+    không hề có.
   </p>
 
   <h2>Kiến trúc: một agent điều phối, ba agent con</h2>
   <p>
-    Hệ thống xây bằng <strong>LangChain + LangGraph</strong>. Agent điều phối đọc tin của khách,
-    suy luận bước kế tiếp và gọi ba agent con như tool — <strong>Đặt lịch</strong>, <strong>Thông
-    tin tiệm</strong> và <strong>Dịch vụ &amp; giá</strong> — bao nhiêu lần tuỳ lượt đó cần. Các
-    agent con chỉ nói chuyện với nhau qua agent điều phối: agent Dịch vụ báo nhuộm mất hai tiếng,
-    agent điều phối chuyển thông tin đó cho agent Đặt lịch.
+    Hệ thống xây bằng <strong>LangChain + LangGraph</strong>. Agent điều phối đọc tin nhắn của khách,
+    quyết định bước tiếp theo, rồi gọi ba agent con như gọi tool: <strong>Đặt lịch</strong>,
+    <strong>Thông tin tiệm</strong> và <strong>Dịch vụ &amp; giá</strong>. Trong một lượt, nó có thể
+    gọi các agent con nhiều lần. Các agent con chỉ trao đổi với nhau qua agent điều phối — ví dụ agent
+    Dịch vụ báo nhuộm tóc mất hai tiếng, agent điều phối chuyển thông tin đó cho agent Đặt lịch.
   </p>
   <div class="flow">
     <span>khách</span> <b>→</b>
     <span>agent điều phối</span> <b>⇄</b>
     <span>Đặt lịch · Thông tin tiệm · Dịch vụ</span> <b>→</b>
-    <span>guardrail (code)</span> <b>→</b>
+    <span>code kiểm tra</span> <b>→</b>
     <span>khách</span>
   </div>
   <ul>
-    <li><strong>Agent con là tool, không phải chuyển giao.</strong> Tôi so ba mẫu Subagents, Handoffs và Router. Handoffs để agent con nói thẳng với khách; Router không giữ trạng thái qua hội thoại nhiều lượt. Khi agent con là tool, chỉ một agent nói chuyện với khách.</li>
-    <li><strong>Agent con không trạng thái, trả kết quả có cấu trúc.</strong> Mỗi agent con được dựng lại mỗi lần gọi và trả <em>thành công</em>, <em>thiếu thông tin</em> hoặc <em>thất bại</em>, kèm dữ kiện do code trích từ kết quả tool và database. Agent điều phối quyết định dựa trên dữ kiện, không dựa trên văn bản tự do của một mô hình khác.</li>
-    <li><strong>Agent điều phối không có tool nghiệp vụ.</strong> Nó không tự đọc lịch hay tự tính ngày; mọi tra cứu đi qua agent con phụ trách việc đó.</li>
+    <li><strong>Vì sao chọn agent con.</strong> Tôi so ba cách tổ chức agent: Subagents, Handoffs và Router. Với Handoffs, agent con nói thẳng với khách. Router thì không nhớ được hội thoại nhiều lượt. Với Subagents, chỉ agent điều phối nói chuyện với khách, nên dễ kiểm soát.</li>
+    <li><strong>Agent con trả kết quả có cấu trúc.</strong> Agent con không giữ trạng thái giữa các lần gọi, và trả về <em>thành công</em>, <em>thiếu thông tin</em> hoặc <em>thất bại</em>, kèm các dữ kiện do code lấy từ tool và database. Agent điều phối quyết định dựa trên dữ kiện đó, không dựa trên đoạn văn do một model khác viết.</li>
+    <li><strong>Agent điều phối không có tool nghiệp vụ.</strong> Nó không tự đọc lịch hay tự tính ngày. Mọi việc tra cứu đều đi qua agent con phụ trách.</li>
   </ul>
 
   <h2>Ngữ cảnh cho từng lượt</h2>
   <p>
-    Mỗi lượt bắt đầu từ một <strong>ảnh chụp ngữ cảnh dựng từ database</strong> — khách là ai và
-    xưng hô thế nào, hôm nay là ngày mấy, các lịch sắp tới, đề xuất nào đang chờ trả lời — và được
-    đọc lại mỗi khi có tool làm dữ liệu thay đổi. Mỗi agent con chỉ nhận phần nó cần. Tool không
-    dùng được ở thời điểm đó bị <strong>ẩn khỏi mô hình</strong>: khi còn một đề xuất chờ, agent
-    điều phối không thể bắt đầu đặt lịch khác trước khi xử lý xong đề xuất đó.
+    Đầu mỗi lượt, code đọc database để dựng ngữ cảnh: khách là ai, xưng hô thế nào, hôm nay là ngày
+    mấy, khách có lịch nào sắp tới, có đề xuất nào đang chờ trả lời. Khi tool làm dữ liệu thay đổi,
+    code đọc lại. Mỗi agent con chỉ nhận phần thông tin nó cần. Tool nào lúc đó không được dùng sẽ bị
+    <strong>ẩn khỏi model</strong> — ví dụ khi còn đề xuất đang chờ, agent điều phối không thể bắt đầu
+    đặt lịch mới.
   </p>
   <p>
-    Phần lớn các luật này đến từ phiên bản đầu. Không có ngày hôm nay, &ldquo;mai&rdquo; thành một
-    ngày của năm sau. Không có id lịch thật, mô hình tự bịa một id để huỷ và chẳng huỷ được gì —
-    nên giờ id là một enum dựng theo từng khách, từng lượt, và id mô hình tự nghĩ ra không khớp schema
-    của tool. Còn khi tool trả về câu văn soạn sẵn, mô hình chép nguyên câu đó; giờ tool trả dữ liệu,
-    agent tự quyết cách nói.
+    Phần lớn các quy tắc này đến từ lỗi của phiên bản đầu. Không có ngày hôm nay, AI đặt
+    &ldquo;ngày mai&rdquo; thành một ngày của năm sau. Không có ID lịch thật, AI tự bịa ID để huỷ và
+    không huỷ được gì — nên giờ tool chỉ nhận ID nằm trong các lịch thật của khách đó. Còn khi tool
+    trả về câu soạn sẵn, AI chép nguyên văn, nên giờ tool chỉ trả dữ liệu và agent tự viết câu trả lời.
   </p>
 
   <h2>Human-in-the-loop hợp với cách khách nhắn tin</h2>
   <p>
-    Không agent nào ghi được lịch. Agent Đặt lịch chỉ tạo <strong>đề xuất</strong>. Khách duyệt ở
-    lượt sau — bấm một nút, hoặc gõ chữ trả lời, kể cả sau khi hỏi xen chuyện khác — và chỉ lúc đó
-    code mới ghi lịch.
+    Không agent nào được lưu lịch. Agent Đặt lịch chỉ tạo <strong>đề xuất</strong>. Khách duyệt ở tin
+    nhắn sau — bấm nút hoặc gõ chữ, kể cả khi đã hỏi xen chuyện khác. Lúc đó code mới lưu lịch.
   </p>
   <div class="flow">
-    <span>lượt N: đề xuất + nút</span> <b>→</b>
+    <span>lượt N: đề xuất + nút bấm</span> <b>→</b>
     <span>khách bấm hoặc gõ</span> <b>→</b>
-    <span>lượt N+1: một đường quyết định</span> <b>→</b>
-    <span>code ghi từ giá trị trong DB</span>
+    <span>lượt N+1: quyết định</span> <b>→</b>
+    <span>code lưu bằng dữ liệu trong database</span>
   </div>
   <ul>
-    <li><strong>Một đường cho mọi quyết định.</strong> Bấm nút là một API bằng code, không gọi mô hình. Chữ khách gõ được agent điều phối gắn nhãn (đồng ý, từ chối, đổi, chưa rõ, hoặc không liên quan tới đề xuất), và code chỉ được kéo nhãn đó về phía &ldquo;chưa&rdquo; — không bao giờ về phía &ldquo;đồng ý&rdquo;. Cả hai đều đi tới cùng một hàm quyết định.</li>
-    <li><strong>Lúc ghi không lấy gì từ mô hình.</strong> Bước duyệt kiểm chủ đề xuất, hạn, phải ở lượt sau, chỉ dùng một lần và giờ chưa đổi, rồi ghi trong một transaction MongoDB cùng bản ghi của lượt, bằng giá trị trong database chứ không bằng chữ mô hình gõ lại.</li>
-    <li><strong>Đề xuất đang chờ thì phải được quyết.</strong> Nếu khách đã trả lời mà lượt kết thúc với đề xuất vẫn bỏ ngỏ, câu trả lời bị loại và viết lại.</li>
+    <li><strong>Mọi quyết định đi chung một đường.</strong> Bấm nút thì code xử lý, không gọi AI. Nếu khách gõ chữ, agent điều phối gắn nhãn cho câu đó (đồng ý, từ chối, đổi, chưa rõ, hoặc không liên quan), và code chỉ được làm nhãn thận trọng hơn, không bao giờ đổi thành &ldquo;đồng ý&rdquo;. Cả hai trường hợp đều đi vào cùng một hàm xử lý.</li>
+    <li><strong>Lúc lưu không lấy gì từ AI.</strong> Trước khi lưu, code kiểm tra đề xuất đúng của khách này, chưa hết hạn, được tạo ở lượt trước, chưa dùng lần nào, và giờ đó vẫn còn trống. Sau đó lưu trong một transaction MongoDB, bằng dữ liệu trong database.</li>
+    <li><strong>Đề xuất đang chờ phải được xử lý.</strong> Nếu khách đã trả lời mà câu trả lời của agent vẫn bỏ ngỏ đề xuất, câu đó bị loại và viết lại.</li>
   </ul>
   <p>
-    Tôi đã thử cơ chế tạm dừng/tiếp tục có sẵn của LangGraph cho việc này và bỏ nó. Khi chạy với mô
-    hình thật, nó coi một câu hỏi lạc đề (&ldquo;tiệm mở tới mấy giờ?&rdquo;) là câu trả lời cho câu
-    đang chờ; một tin nhắn bình thường gửi lúc graph đang dừng để lại một tool call không có kết quả
-    và làm hỏng luôn thread; còn câu hỏi đang chờ thì tới thẳng khách mà không qua guardrail. Thay
-    vào đó, việc dở của agent con được lưu trong database thành một <strong>phiên chờ, hết hạn sau 10
-    phút</strong> kể từ câu hỏi cuối, và agent điều phối chọn làm tiếp hay mở việc mới.
+    Tôi đã thử cơ chế tạm dừng/tiếp tục có sẵn của LangGraph cho việc này và bỏ nó. Khi chạy thử với
+    model thật, nó coi một câu hỏi lạc đề (&ldquo;tiệm mở tới mấy giờ?&rdquo;) là câu trả lời cho câu
+    hỏi đang chờ. Một tin nhắn bình thường gửi lúc graph đang dừng làm hỏng luôn cuộc hội thoại. Câu
+    hỏi đang chờ cũng tới thẳng khách mà không qua kiểm tra. Thay vào đó, việc đang làm dở của agent
+    con được lưu vào database thành một <strong>phiên chờ, hết hạn sau 10 phút</strong>, và agent điều
+    phối quyết định làm tiếp hay bắt đầu việc mới.
   </p>
 
-  <h2>Guardrail nằm trong vòng lặp agent</h2>
+  <h2>Code kiểm tra mọi câu trả lời</h2>
   <p>
-    Sau mỗi lần mô hình trả lời, <strong>các bộ kiểm tra tất định bằng code</strong> đối chiếu câu
-    trả lời với dữ kiện từ tool và database, trước khi khách thấy bất cứ gì:
+    Sau mỗi câu trả lời của AI, <strong>các bước kiểm tra bằng code</strong> đối chiếu nó với dữ kiện
+    từ tool và database, trước khi khách nhìn thấy:
   </p>
   <ul>
-    <li><strong>Khẳng định không có căn cứ</strong> — &ldquo;đã đặt&rdquo;, &ldquo;đã huỷ&rdquo;, &ldquo;đã dời&rdquo; mà lượt này không có thao tác ghi tương ứng.</li>
-    <li><strong>Giờ và giá</strong> — mọi giờ phải là giờ tool trả về, mọi số tiền phải nằm trong khoảng giá của danh mục cho các dịch vụ liên quan.</li>
-    <li><strong>Dữ kiện bắt buộc và đề xuất đang chờ</strong> — không bỏ sót thứ lượt đó phụ thuộc vào.</li>
-    <li><strong>Xưng hô và lặp câu</strong> — cùng một khách thì xưng hô thống nhất, và agent không lặp nguyên văn câu của chính nó.</li>
+    <li><strong>Nói sai sự thật</strong> — báo &ldquo;đã đặt&rdquo;, &ldquo;đã huỷ&rdquo;, &ldquo;đã dời&rdquo; trong khi lượt này chưa lưu gì.</li>
+    <li><strong>Giờ và giá</strong> — giờ phải đúng giờ tool trả về, giá phải nằm trong khoảng giá của dịch vụ.</li>
+    <li><strong>Thiếu thông tin</strong> — câu trả lời phải có đủ dữ kiện cần thiết và phải xử lý đề xuất đang chờ.</li>
+    <li><strong>Xưng hô và lặp câu</strong> — cùng một khách thì xưng hô thống nhất, và agent không lặp lại câu của chính nó.</li>
   </ul>
   <p>
-    Câu không đạt bị gỡ ra và được <strong>viết lại một lần, không có tool</strong> — chỉ chữ, cùng
-    dữ kiện, không tra cứu hay tạo đề xuất mới. Vẫn không đạt thì gửi <strong>câu mẫu do code
-    viết</strong>. Câu trả lời không stream, nên khách không bao giờ thấy một câu sai rồi câu đó bị
-    thay.
+    Câu nào không đạt thì AI được <strong>viết lại một lần, không dùng tool</strong> — giữ nguyên dữ
+    kiện, không tra cứu thêm. Vẫn không đạt thì gửi <strong>câu do code soạn sẵn</strong>. Câu trả lời
+    không được stream, nên khách không bao giờ thấy một câu sai rồi bị thay.
   </p>
   <div class="callout">
     <p>
-      <strong>Nguyên tắc:</strong> guardrail nằm trong prompt là một lời dặn. Guardrail nằm trong
-      kiến trúc là một bảo đảm. Chỗ nào sai là mất thứ thật, chỗ đó mô hình đề xuất và code tất định
+      <strong>Nguyên tắc:</strong> dặn AI trong prompt thì nó vẫn có thể làm sai. Chặn bằng code thì AI
+      không có đường nào để tự ghi lịch. Việc nào sai sẽ gây hậu quả thật thì AI chỉ đề xuất, còn code
       mới là bên ghi.
     </p>
   </div>
 
   <h2>Bộ nhớ và chi phí</h2>
   <ul>
-    <li><strong>Bộ nhớ ngắn hạn theo cuộc trò chuyện</strong> — mỗi khách một thread mỗi ngày, middleware tóm tắt của LangChain nén lịch sử khi dài.</li>
-    <li><strong>Bộ nhớ dài hạn theo từng khách</strong> — sở thích, ghi chú và lần ghé trước, lưu trong store của LangGraph trên MongoDB và được tổng hợp khi bắt đầu cuộc trò chuyện mới. Agent con không nhận phần này.</li>
-    <li><strong>Chi phí có trần</strong> — trần số lần gọi mô hình và tool mỗi lượt, cùng ngân sách LLM theo giờ cho mỗi khách, tính cả lần gọi của agent con. Chạm trần thì lượt kết thúc bằng câu do code viết, không bao giờ là thông báo lỗi của thư viện.</li>
-    <li><strong>Quan sát</strong> — mọi lượt chạy được trace trên Langfuse tự host, nên độ trễ và chi phí thấy được theo từng lượt mà hội thoại không rời khỏi máy chủ.</li>
+    <li><strong>Bộ nhớ ngắn hạn</strong> — mỗi khách một cuộc trò chuyện mỗi ngày. Lịch sử dài được tóm tắt bằng summarization middleware của LangChain.</li>
+    <li><strong>Bộ nhớ dài hạn theo từng khách</strong> — sở thích, ghi chú và lần ghé gần nhất, lưu trong store của LangGraph trên MongoDB và được cập nhật khi bắt đầu cuộc trò chuyện mới. Agent con không thấy phần này.</li>
+    <li><strong>Giới hạn chi phí</strong> — giới hạn số lần gọi model và tool mỗi lượt, cùng ngân sách LLM theo giờ cho từng khách, tính cả lần gọi của agent con. Khi chạm giới hạn, khách nhận câu do code soạn, không phải thông báo lỗi của thư viện.</li>
+    <li><strong>Theo dõi</strong> — mọi lượt chạy được ghi lại trên Langfuse tự host, nên xem được tốc độ và chi phí từng lượt mà hội thoại vẫn nằm trên máy chủ của mình.</li>
   </ul>
 
   <h2>Kết quả</h2>
   <table class="res">
     <tr><th>Chỉ số</th><th>Kết quả</th></tr>
-    <tr><td>Lịch hẹn LLM tự ghi được</td><td>không có — nó chỉ được đề xuất</td></tr>
-    <tr><td>Số đường duyệt một đề xuất</td><td>một, dùng chung cho nút bấm và chữ gõ</td></tr>
-    <tr><td>Câu trả lời được code kiểm trước khi gửi</td><td>tất cả</td></tr>
-    <tr><td>Câu trả lời không đạt</td><td>viết lại 1 lần không tool, rồi câu mẫu code</td></tr>
-    <tr><td>Việc dở của agent con</td><td>lưu ở MongoDB, hết hạn sau 10 phút</td></tr>
-    <tr><td>Giới hạn chi phí</td><td>trần gọi mỗi lượt + ngân sách LLM theo giờ mỗi khách</td></tr>
+    <tr><td>Lịch hẹn AI tự lưu được</td><td>không có — AI chỉ được đề xuất</td></tr>
+    <tr><td>Cách duyệt một đề xuất</td><td>một đường chung cho nút bấm và chữ gõ</td></tr>
+    <tr><td>Câu trả lời được code kiểm tra trước khi gửi</td><td>tất cả</td></tr>
+    <tr><td>Khi câu trả lời không đạt</td><td>viết lại 1 lần không tool, rồi dùng câu do code soạn</td></tr>
+    <tr><td>Việc làm dở của agent con</td><td>lưu ở MongoDB, hết hạn sau 10 phút</td></tr>
+    <tr><td>Giới hạn chi phí</td><td>giới hạn số lần gọi mỗi lượt + ngân sách LLM theo giờ mỗi khách</td></tr>
   </table>
   <p>
-    Trang này mô tả bản dựng lại theo kiến trúc agent điều phối – agent con mà tôi đang hoàn thiện.
-    Hệ thống chạy local với đầy đủ bộ test pytest; chưa triển khai cho tiệm dùng thật.
+    Trang này mô tả phiên bản agent điều phối và agent con mà tôi đang hoàn thiện. Hệ thống chạy local
+    với đầy đủ bộ test pytest, tiệm chưa đưa vào dùng thật.
   </p>
 
   <h2>Công nghệ</h2>

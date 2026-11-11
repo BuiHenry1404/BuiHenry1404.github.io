@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent phân tích số liệu cho doanh nghiệp TMĐT · Bùi Henry</title>
+<meta name="description" content="Một AI agent trả lời câu hỏi về doanh thu và chi phí trên dữ liệu bán hàng của một sàn TMĐT và dựng báo cáo biểu đồ. Việc làm báo cáo trước đây mất 3 ngày, nay còn 1 ngày.">
+<meta property="og:title" content="Agent phân tích số liệu cho doanh nghiệp TMĐT · Bùi Henry">
+<meta property="og:description" content="Một AI agent trả lời câu hỏi về doanh thu và chi phí trên dữ liệu bán hàng của một sàn TMĐT và dựng báo cáo biểu đồ. Việc làm báo cáo trước đây mất 3 ngày, nay còn 1 ngày.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://buihenry1404.github.io/vi/projects/ecommerce-analytics.html">
+<meta property="og:image" content="https://buihenry1404.github.io/assets/henry.jpg">
+<link rel="canonical" href="https://buihenry1404.github.io/vi/projects/ecommerce-analytics.html">
+<link rel="alternate" hreflang="vi" href="https://buihenry1404.github.io/vi/projects/ecommerce-analytics.html">
+<link rel="alternate" hreflang="en" href="https://buihenry1404.github.io/projects/ecommerce-analytics.html">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%230B1120'/><text x='50' y='72' font-size='64' font-family='monospace' font-weight='bold' fill='%2322C55E' text-anchor='middle'>H</text></svg>">
+<link rel="stylesheet" href="../../assets/style.css">
+<noscript><style>.reveal{opacity:1!important;transform:none!important}</style></noscript>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap nav__inner">
+    <a class="nav__home" href="../">~/buihenry</a>
+    <div class="nav__links">
+      <a href="../#work">Kinh nghiệm</a>
+      <a href="../#skills">Kỹ năng</a>
+      <a href="../#contact">Liên hệ</a>
+      <span class="lang"><a href="../../projects/ecommerce-analytics.html" hreflang="en">EN</a><a href="../" hreflang="vi" aria-current="true">VI</a></span>
+    </div>
+  </div>
+</nav>
+
+<article class="wrap article">
+  <h1>Agent phân tích số liệu cho doanh nghiệp TMĐT</h1>
+  <div class="article__meta">Sàn thương mại điện tử · FPT Software · 06 – 09/2026</div>
+
+  <p class="lead">
+    Một AI agent cho doanh nghiệp vận hành sàn thương mại điện tử riêng. Trưởng phòng kinh doanh và kế
+    toán hỏi về doanh thu, chi phí bằng lời, agent trả lời từ database bán hàng và dựng báo cáo kèm
+    biểu đồ. Khách dùng hằng ngày.
+  </p>
+
+  <h2>Bài toán</h2>
+  <p>
+    Toàn bộ dữ liệu bán hàng và hoá đơn đã nằm sẵn trong database, nhưng lấy số ra lại chậm. Mỗi khi
+    trưởng phòng kinh doanh hay kế toán cần số liệu, phải có một nhân viên phân tích gom dữ liệu bằng
+    tay rồi làm báo cáo — mỗi lần mất khoảng <strong>ba ngày</strong>. Có câu hỏi mới thì phải chờ báo
+    cáo lần sau.
+  </p>
+
+  <h2>Agent làm gì</h2>
+  <p>
+    Trưởng phòng kinh doanh hỏi doanh thu theo ngày, tháng hoặc năm. Kế toán hỏi chi phí. Agent trả
+    lời ngay trong khung chat, và có thể tạo báo cáo kèm biểu đồ.
+  </p>
+  <div class="flow">
+    <span>câu hỏi bằng lời</span> <b>→</b>
+    <span>agent</span> <b>→</b>
+    <span>tool SQL</span> <b>→</b>
+    <span>câu trả lời + báo cáo biểu đồ</span>
+  </div>
+  <p>
+    Tôi là người duy nhất làm phần AI và backend, trong nhóm bốn người (còn lại là một tester, một PM
+    và một BA).
+  </p>
+
+  <h2>Giữ cho số liệu chính xác</h2>
+  <p>
+    Số liệu phải chính xác, nên AI không tự viết SQL. Nó chỉ được gọi các <strong>tool có SQL viết
+    sẵn</strong> — ví dụ liệt kê hoá đơn trong một ngày hay một tháng, hoặc tính tổng doanh thu của
+    một tháng. Mọi con số trong câu trả lời đều lấy thẳng từ database qua các tool này, không phải do
+    model tự nghĩ ra.
+  </p>
+  <p>
+    Để kiểm tra, tôi xây một <strong>bộ eval gồm 250 câu hỏi trên 12 tháng</strong> dữ liệu thật, rồi
+    so câu trả lời của agent với các báo cáo công ty đã có của những tháng đó. Agent trả lời đúng
+    khoảng <strong>90%</strong>.
+  </p>
+
+  <h2>Kết quả</h2>
+  <table class="res">
+    <tr><th>Chỉ số</th><th>Kết quả</th></tr>
+    <tr><td>Thời gian ra một báo cáo</td><td>3 ngày (làm tay) → 1 ngày</td></tr>
+    <tr><td>Độ đúng câu trả lời</td><td>~90% trên 250 câu hỏi, 12 tháng</td></tr>
+    <tr><td>Cách tạo ra số liệu</td><td>chỉ qua tool SQL viết sẵn, không để model tự viết SQL</td></tr>
+    <tr><td>Trạng thái</td><td>đã bàn giao cho khách, dùng hằng ngày</td></tr>
+  </table>
+
+  <h2>Công nghệ</h2>
+  <div class="tags">
+    <span class="tag">Python</span><span class="tag">LangChain</span><span class="tag">LangGraph</span>
+    <span class="tag">Azure OpenAI (GPT-5.4-mini)</span><span class="tag">PostgreSQL</span>
+    <span class="tag">SQL tools</span><span class="tag">LLM evaluation</span>
+  </div>
+
+  <a class="backlink" href="../#work">← Tất cả dự án</a>
+</article>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Bùi Henry</span>
+    <span><a href="https://mail.google.com/mail/?view=cm&amp;fs=1&amp;to=buihenry1404@gmail.com&amp;su=Opportunity%20for%20B%C3%B9i%20Henry" target="_blank" rel="noopener">buihenry1404@gmail.com</a></span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var rm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var els = document.querySelectorAll('.reveal');
+  if (!rm && 'IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { rootMargin: '0px 0px -10% 0px' });
+    els.forEach(function (el) { io.observe(el); });
+  } else {
+    els.forEach(function (el) { el.classList.add('in'); });
+  }
+
+})();
+</script>
+</body>
+</html>

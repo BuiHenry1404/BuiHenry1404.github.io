@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>A multi-agent SDLC platform · Bùi Henry</title>
-<meta name="description" content="Six SDLC agents and a 9-step workflow that turns a rough idea into requirements, design and a mockup — plus the Azure DevOps integration that puts it where developers work.">
-<meta property="og:title" content="A multi-agent SDLC platform · Bùi Henry">
-<meta property="og:description" content="Six SDLC agents and a 9-step workflow that turns a rough idea into requirements, design and a mockup — plus the Azure DevOps integration that puts it where developers work.">
+<title>AgentBox — a multi-agent SDLC platform · Bùi Henry</title>
+<meta name="description" content="Six SDLC agents and a 9-step workflow that turn an idea into requirements, design and a mockup, an Azure DevOps integration, and onboarding projects onto the platform.">
+<meta property="og:title" content="AgentBox — a multi-agent SDLC platform · Bùi Henry">
+<meta property="og:description" content="Six SDLC agents and a 9-step workflow that turn an idea into requirements, design and a mockup, an Azure DevOps integration, and onboarding projects onto the platform.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://buihenry1404.github.io/projects/sdlc-platform.html">
 <meta property="og:image" content="https://buihenry1404.github.io/assets/henry.jpg">
@@ -32,34 +32,32 @@
 </nav>
 
 <article class="wrap article">
-  <h1>Designing the agents inside an SDLC platform</h1>
-  <div class="article__meta">Internal developer platform · FPT Software · Apr 2026 – present</div>
+  <h1>AgentBox: AI agents for the software development lifecycle</h1>
+  <div class="article__meta">AgentBox Ecosystem · FPT Software · Apr 2026 – present</div>
 
 <p class="lead">
-    The platform runs multi-agent "swarms" across the software development lifecycle. I work on three
-    parts of it: the agents that produce the documents, the Azure DevOps integration that puts
-    them in front of developers without asking anyone to change tools, and onboarding projects
-    onto the platform.
+    AgentBox runs groups of AI agents across the software development lifecycle. I worked on three
+    parts: the agents that write project documents, the Azure DevOps integration that lets
+    developers use them without leaving their tools, and helping projects start using the platform.
   </p>
 
-  <h2>Part 1 — Making a document workflow finish</h2>
+  <h2>Part 1 — A document workflow that finishes on the first run</h2>
   <p>
-    The SDLC swarm takes a rough product idea and walks it through requirements, specification,
-    design and a UI mockup, one agent per stage. When I picked it up, only about
-    <strong>half the runs</strong> produced documents that could be used as they came out. The
-    other half came out missing a deliverable, or with a stage that produced something the next
-    stage could not consume — and somebody had to notice and run it again.
+    The SDLC workflow takes a rough product idea and turns it into requirements, specifications,
+    design and a UI mockup, with one agent per step. When I took it over, <strong>only about half of
+    the runs produced documents that were usable as they came out</strong>. The rest were missing a
+    file, or one step produced something the next step could not use, and someone had to notice and
+    run it again.
   </p>
   <p>
-    Failures clustered in a way that pointed at the workflow rather than the models: a stage
-    would produce prose where the next stage expected a named artefact, or would quietly skip an
-    output nobody had specified precisely enough to demand.
+    The failures came from the workflow, not the models. One step wrote free text where the next
+    step expected a specific file. Another skipped an output because nobody had said it was required.
   </p>
 
   <h3>The redesign</h3>
-  <p>I rebuilt the workflow as <strong>9 explicit steps</strong>:</p>
+  <p>I rebuilt the workflow as <strong>9 clear steps</strong>:</p>
   <div class="flow">
-    <span>brainstorming gate</span> <b>→</b>
+    <span>brainstorming</span> <b>→</b>
     <span>PRD draft</span> <b>→</b>
     <span>PRD</span> <b>→</b>
     <span>SRS</span> <b>→</b>
@@ -69,128 +67,96 @@
     <span>mockup</span> <b>→</b>
     <span>traceability matrix</span>
   </div>
-  <p>Three changes did most of the work:</p>
+  <p>Three changes made most of the difference:</p>
   <ul>
-    <li>
-      <strong>A brainstorming gate at the front.</strong> A vague idea produces vague
-      requirements, and every later stage inherits the vagueness. The first agent's job is to
-      interrogate the idea until there is something specific to specify.
-    </li>
-    <li>
-      <strong>A named, structured deliverable per step.</strong> Each stage emits a specific
-      artefact — <code>PRD.md</code>, <code>SRS.md</code>, a requirements traceability matrix
-      that later steps extend — so "did this step succeed" became checkable instead of a
-      judgement call.
-    </li>
-    <li>
-      <strong>Retry at the step level.</strong> When a stage produces an unusable deliverable,
-      that stage re-runs. Previously the whole run was discarded.
-    </li>
+    <li><strong>A brainstorming step first, with a human check.</strong> A vague idea leads to vague requirements, and every later step gets worse. The first agent asks questions until the idea is specific enough.</li>
+    <li><strong>Each step must produce a specific file.</strong> For example <code>PRD.md</code>, <code>SRS.md</code>, and a traceability matrix that later steps extend. Whether a step succeeded can now be checked automatically.</li>
+    <li><strong>Retry only the failed step.</strong> If one step fails, only that step runs again. Before, the whole run was thrown away.</li>
   </ul>
   <p>
-    I also pushed diagrams into the specification itself — story maps, C4 diagrams, sequence
-    diagrams, ERDs, state diagrams — because a diagram is a structural output an agent either
-    produces correctly or visibly fails to.
+    I also added diagrams to the specification: story maps, C4, sequence diagrams, ERDs and state
+    diagrams. A diagram is either correct or clearly broken, so it works as a check by itself.
   </p>
 
   <h3>The agents</h3>
   <p>
-    I built and reworked <strong>6 SDLC agents</strong>: brainstorming, requirements analysis,
-    architecture, UX design, UI mockup, and adversarial PRD review. For each one that meant a
-    persona and system prompt, the skills it can apply, and reference material that gives it
-    domain footing — C4 notation, NFR frameworks, SRS writing conventions, job stories,
-    adversarial validation checklists.
+    I built and reworked <strong>6 SDLC agents</strong> from an existing base: brainstorming,
+    requirements analysis (Job Stories), architecture with BDD test scenarios, UX design, UI mockup,
+    and Red Team PRD review. For each agent I wrote the persona and system prompt, chose the skills
+    it can use, and added reference material such as C4 notation, NFR frameworks, SRS conventions
+    and review checklists.
   </p>
   <p>
-    Every output is built to be traced: MoSCoW priorities and stable IDs carry from a user
-    story through requirements, design and mockup, with C4, sequence and ERD diagrams along the
-    way. The agents are now used by <strong>4 projects</strong> and helped each of them reach an
-    <strong>MVP or demo faster</strong> — they hand the agents the first pass at brainstorming
-    features and drafting requirements from user stories and use cases.
+    Outputs can be traced end to end: MoSCoW priorities and stable IDs carry from a user story to
+    requirements, design and mockup. <strong>4 projects</strong> use these agents, and they helped
+    each project <strong>reach an MVP or demo faster</strong>.
   </p>
   <div class="callout">
     <p>
-      The reference material mattered more than prompt wording. An architecture agent told to
-      "produce a good architecture" writes generalities. The same agent given C4 syntax and a
-      concrete NFR framework produces something a human architect can argue with — which is the
-      actual goal.
+      Good reference material mattered more than prompt wording. An architecture agent told to
+      &ldquo;design a good architecture&rdquo; writes general advice. Given C4 notation and a concrete
+      NFR framework, it writes a design that an architect can actually review.
     </p>
   </div>
 
   <h3>Model routing</h3>
   <p>
-    Every step originally ran on one global default model. That is wrong in both directions:
-    cheap models fail the reasoning-heavy stages, and expensive models are wasted on mechanical
-    ones. I shipped <strong>per-swarm and per-agent model pinning across four layers</strong> of
-    the stack — the Go CLI, the desktop app, the Next.js web UI and the Python orchestrator — so
-    each step runs on a model and reasoning-effort setting chosen for that step. That cut the
-    cost of a workflow run by about <strong>45%</strong>.
+    At first every step used the same default model. Cheap models failed the steps that need deep
+    reasoning, and expensive models were wasted on simple steps. I added <strong>model selection per
+    workflow and per agent</strong> across four layers — the Go CLI, the desktop app, the Next.js web
+    UI and the Python orchestrator — so each step runs on the model and reasoning level it needs.
+    This <strong>cut the cost of a run by about 45%</strong>.
   </p>
 
-  <h2>Part 2 — Putting agents where developers already are</h2>
+  <h2>Part 2 — Agents inside Azure DevOps</h2>
   <p>
-    An agent platform nobody opens is worth nothing. Developers live in Azure DevOps, so I built
-    the integration service that brings agents to them: a layered FastAPI application of
-    <strong>64 modules and 32 endpoints</strong> across 10 routers, with Supabase token auth and
-    an async Azure DevOps REST client.
+    Developers spend their day in Azure DevOps, so the agents should be there too. I built the
+    integration service: a FastAPI application with <strong>64 modules and 32 endpoints</strong>
+    across 10 routers, Supabase token auth and an async Azure DevOps REST client.
   </p>
-  <p>Two flows matter:</p>
   <ul>
-    <li>
-      <strong>Assigning work by <code>@mention</code>.</strong> Mentioning the bot on a work
-      item turns the ticket into an agent job behind strict allow-list gates; the answer comes
-      back as a comment on the same work item. The developer never leaves the ticket.
-    </li>
-    <li>
-      <strong>Turning AI output into tracked work.</strong> A review report used to mean
-      hand-creating 5–8 work items. A parser maps findings onto work items via JSON-Patch, so
-      the same report becomes tracked tasks in one click: manual steps drop from 5–8 to
-      <strong>1 (~85% fewer)</strong>.
-    </li>
+    <li><strong>Assign work with <code>@mention</code>.</strong> A developer mentions the agent on a work item. The request passes an allow-list check, becomes an agent job, and the result comes back as a comment on the same work item.</li>
+    <li><strong>Turn AI output into tasks.</strong> A review report used to mean creating 5–8 work items by hand. A parser now maps each finding to a work item via JSON-Patch, so it takes one click: <strong>manual steps went from 5–8 to 1</strong>.</li>
   </ul>
   <p>
-    Jobs are dispatched to desktop workers, which claim them, run the agent and report back.
-    Because the same mention can arrive more than once — webhooks retry — the dispatch path is
-    built so a request executes exactly once regardless. Long-running jobs recover on their own:
-    stuck jobs, dropped connections and duplicate runs are handled automatically, so about
-    <strong>80% of agent jobs finish without anyone watching them</strong>.
+    Jobs go to workers on developers' machines, which run the agent and report back. Webhooks can
+    send the same mention more than once, so each request runs only once. Long jobs also recover by
+    themselves from hangs, dropped connections and duplicate runs: <strong>about 80% of agent jobs
+    finish without anyone watching them</strong>.
   </p>
-
-  <h3>Security and deployment reach</h3>
   <p>
-    Some customers require that everything stays entirely inside their own infrastructure. I
-    added support for <strong>self-hosted Azure DevOps Server</strong> alongside the cloud
-    version, so their work items and code references never leave their own network. Access
-    tokens are masked in logs on both paths.
+    Some customers need all data to stay inside their own network, so I added support for
+    <strong>self-hosted Azure DevOps Server</strong> next to the cloud version. Access tokens are
+    masked in logs in both cases.
   </p>
 
   <h2>Part 3 — Onboarding projects (Forward Deployed Engineer)</h2>
   <p>
-    Agents are only as good as the project context they can read, and on most projects that
-    context was scattered across files, chats and people's heads. Working as a
-    <strong>Forward Deployed Engineer</strong>, I onboarded <strong>2 projects</strong>: their
-    <strong>~100 scattered documents</strong> (about 50 each) moved into Azure DevOps Wiki under
-    a standard page tree and page templates, so every agent reads the same shared project context.
+    Agents can only be as good as the project information they can read, and on most projects that
+    information was spread across many files and chats. As a <strong>Forward Deployed
+    Engineer</strong>, I onboarded <strong>2 projects</strong>: I moved their <strong>~100 scattered
+    documents</strong> (about 50 each) to Azure DevOps Wiki using a standard page structure and
+    templates, so all agents read the same project context.
   </p>
   <p>
-    Then I worked with each team to roll out agent workflows in their day-to-day process — which
-    steps to hand to an agent, and where a human still signs off.
+    Then I worked with each team to bring agent workflows into their daily work: which steps go to
+    an agent, and where a person still has to approve.
   </p>
 
   <h2>Results</h2>
   <table class="res">
     <tr><th>Measure</th><th>Result</th></tr>
-    <tr><td>Runs whose documents were usable on the first run</td><td>~50% → ~80%</td></tr>
+    <tr><td>Runs with documents usable on the first run</td><td>~50% → ~80%</td></tr>
     <tr><td>Cost per workflow run</td><td>~45% lower</td></tr>
     <tr><td>Projects using the SDLC agents</td><td>4, each reaching an MVP/demo faster</td></tr>
-    <tr><td>Agent jobs finishing without human intervention</td><td>~80%</td></tr>
-    <tr><td>Manual steps to move AI output into Azure DevOps</td><td>5–8 → 1 (~85% fewer)</td></tr>
-    <tr><td>Customer data on customer infrastructure</td><td>on-prem supported</td></tr>
-    <tr><td>Projects onboarded as Forward Deployed Engineer</td><td>2 (~100 documents → shared wiki context)</td></tr>
+    <tr><td>Agent jobs finishing without supervision</td><td>~80%</td></tr>
+    <tr><td>Manual steps to turn AI output into Azure DevOps tasks</td><td>5–8 → 1</td></tr>
+    <tr><td>Customer data kept on customer servers</td><td>on-premise supported</td></tr>
+    <tr><td>Projects onboarded (Forward Deployed Engineer)</td><td>2, ~100 documents moved to a shared wiki</td></tr>
   </table>
   <p>
-    On a repository with 22 contributors I am the third-largest by commit count — the platform
-    is very much a team effort, and this page covers my part of it.
+    The repository has 22 contributors and I am third by number of commits. AgentBox is a team
+    product; this page only covers my part.
   </p>
 
   <h2>Stack</h2>

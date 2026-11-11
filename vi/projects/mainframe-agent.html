@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Buộc một LLM agent trả lời từ mã COBOL · Bùi Henry</title>
-<meta name="description" content="Parser ANTLR4 chuyển COBOL/JCL/CopyBook thành JSON có cấu trúc; MCP tool cho agent tra phụ thuộc thật. Câu trả lời không có căn cứ giảm từ ~50% xuống ~20%.">
-<meta property="og:title" content="Buộc một LLM agent trả lời từ mã COBOL · Bùi Henry">
-<meta property="og:description" content="Parser ANTLR4 chuyển COBOL/JCL/CopyBook thành JSON có cấu trúc; MCP tool cho agent tra phụ thuộc thật. Câu trả lời không có căn cứ giảm từ ~50% xuống ~20%.">
+<title>xMainframe — AI agent trả lời từ mã COBOL thật · Bùi Henry</title>
+<meta name="description" content="Parser ANTLR4 chuyển COBOL/JCL/CopyBook thành dữ liệu có cấu trúc, MCP tool cho agent tra phụ thuộc thật. Câu trả lời thiếu căn cứ giảm từ ~50% xuống ~20%.">
+<meta property="og:title" content="xMainframe — AI agent trả lời từ mã COBOL thật · Bùi Henry">
+<meta property="og:description" content="Parser ANTLR4 chuyển COBOL/JCL/CopyBook thành dữ liệu có cấu trúc, MCP tool cho agent tra phụ thuộc thật. Câu trả lời thiếu căn cứ giảm từ ~50% xuống ~20%.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://buihenry1404.github.io/vi/projects/mainframe-agent.html">
 <meta property="og:image" content="https://buihenry1404.github.io/assets/henry.jpg">
@@ -32,37 +32,32 @@
 </nav>
 
 <article class="wrap article">
-  <h1>Buộc một LLM agent trả lời từ mã COBOL 50 năm tuổi</h1>
-  <div class="article__meta">Mainframe modernization · FPT Software · 11/2025 – 04/2026</div>
+  <h1>AI agent trả lời từ mã COBOL thật</h1>
+  <div class="article__meta">Legacy PGM – xMainframe · FPT Software · 11/2025 – 04/2026</div>
 
   <p class="lead">
-    Một trợ lý AI cho kỹ sư bảo trì chương trình mainframe. Phần khó chưa bao giờ nằm ở giao diện
-    chat, mà ở chỗ làm sao để agent trả lời dựa trên mã nguồn thật, thay vì dựa trên những gì mô
-    hình đoán rằng COBOL thường trông như thế nào.
+    Trợ lý AI cho kỹ sư bảo trì hệ thống mainframe. Phần khó không nằm ở giao diện chat, mà ở việc
+    bắt agent trả lời dựa trên code thật, chứ không dựa trên những gì mô hình đoán.
   </p>
 
   <h2>Bài toán</h2>
   <p>
-    Hệ thống mainframe của khách hàng đã chạy hàng chục năm, và giờ rất ít người còn nắm được
-    toàn bộ. Một kỹ sư nhận yêu cầu bảo trì cần biết thay đổi của mình ảnh hưởng tới chương trình
-    nào, job nào gọi chương trình đó, và copybook nào định nghĩa bản ghi liên quan. Tự tìm bằng
-    tay thì phải đọc hàng nghìn dòng nằm rải rác ở nhiều file, mà các file này lại tham chiếu
-    nhau một cách gián tiếp.
+    Hệ thống mainframe của khách hàng đã chạy hàng chục năm, giờ ít người còn nắm hết. Trước khi
+    sửa, kỹ sư cần biết thay đổi đó ảnh hưởng chương trình nào, job nào chạy chương trình đó, và
+    copybook nào định nghĩa bản ghi liên quan. Tự tìm bằng tay thì phải đọc hàng nghìn dòng nằm rải
+    rác ở nhiều file.
   </p>
   <p>
-    Hỏi một LLM thông thường thì nó trả lời sai nhưng rất tự tin. Hỏi chương trình này phụ thuộc
-    copybook nào, nó đưa ra một câu nghe rất hợp lý, đúng cú pháp, và sai. Trong công việc bảo
-    trì, kiểu sai đó còn tệ hơn là không trả lời: một dependency sai khiến kỹ sư đi sửa nhầm
-    file. Vì vậy agent phải được thiết kế sao cho nó <strong>không thể</strong> trả lời chỉ dựa
-    vào trí nhớ của mô hình.
+    Hỏi một LLM bình thường thì nó trả lời sai mà rất tự tin. Hỏi chương trình này dùng copybook
+    nào, nó đưa ra câu nghe hợp lý nhưng sai. Trong bảo trì, như vậy còn tệ hơn không trả lời: kỹ sư
+    sẽ đi sửa nhầm file. Vì vậy agent không được phép trả lời chỉ bằng trí nhớ của mô hình.
   </p>
 
-  <h2>Cách tiếp cận: parse trước, rồi để mô hình tự tra</h2>
+  <h2>Cách làm: parse code trước, rồi cho mô hình tự tra</h2>
   <p>
-    Thay vì đổ mã nguồn thô vào context window rồi hy vọng mô hình tự hiểu, tôi dựng một pipeline
-    biến codebase thành dữ liệu có cấu trúc tra cứu được, rồi cho mô hình các công cụ để tra.
+    Thay vì dán nguyên mã nguồn vào prompt, tôi chuyển codebase thành dữ liệu có cấu trúc, rồi cho
+    mô hình công cụ để tra cứu.
   </p>
-
   <div class="flow">
     <span>COBOL / JCL / CopyBook</span> <b>→</b>
     <span>parser ANTLR4</span> <b>→</b>
@@ -71,130 +66,90 @@
     <span>LLM</span>
   </div>
 
-  <h3>1. Grammar ANTLR4</h3>
+  <h3>1. Parser ANTLR4</h3>
   <p>
-    Tôi viết grammar cho COBOL, JCL và CopyBook, đầu ra là JSON gồm chương trình, biến, bố cục
-    bản ghi và quan hệ phụ thuộc giữa chúng. Yêu cầu tôi đặt ra cho parser là tuyệt đối chứ không
-    chấp nhận tỉ lệ: <strong>mọi file đều phải parse được, không bỏ sót cấu trúc nào</strong>,
-    trên bộ tham chiếu 32 file COBOL / 16 file JCL và khoảng 3 triệu dòng mã nội bộ.
+    Tôi xây parser ANTLR4 cho COBOL, JCL và CopyBook. Đầu ra là JSON gồm chương trình, biến, cấu
+    trúc bản ghi và quan hệ phụ thuộc giữa chúng. Yêu cầu đặt ra là <strong>file nào cũng phải parse
+    được</strong>. Kết quả: parse được 100% bộ tham chiếu 32 file COBOL / 16 file JCL và khoảng 3
+    triệu dòng code nội bộ.
   </p>
   <p>
-    Mã mainframe ngoài đời khó hơn nhiều so với tài liệu mô tả. Câu lệnh phải nằm đúng cột theo
-    chuẩn fixed-format của IBM. Copybook được chèn thẳng vào mã như chèn văn bản, và nội dung còn
-    có thể bị thay thế ngay lúc chèn. Mỗi nơi lại dùng một biến thể COBOL hơi khác nhau. Nếu
-    parser âm thầm bỏ qua những chỗ nó không hiểu, đồ thị phụ thuộc sinh ra sẽ bị thủng — và đúng
-    những chỗ thủng đó là nơi agent bắt đầu bịa.
+    Code mainframe thật rất khó parse. Câu lệnh phải nằm đúng cột, copybook được chèn thẳng vào code
+    và có thể bị thay nội dung lúc chèn, mỗi nơi lại dùng một biến thể COBOL hơi khác. Parser mà bỏ
+    qua chỗ nó không hiểu thì dữ liệu phụ thuộc sẽ bị thiếu — và agent sẽ bắt đầu bịa đúng ở những
+    chỗ thiếu đó.
   </p>
   <p>
-    Bộ parser này không mới ở dự án này. Ở <strong>Mainframe Studio</strong> (08/2024 – 08/2025)
-    tôi đã tối ưu chúng, <strong>giảm thời gian parse một codebase lớn từ 1 giờ 30 phút xuống 45
-    phút</strong>: tinh gọn rule grammar theo đúng cấu trúc của code mainframe, chạy codebase lớn
-    bằng bản Java, và chuyển bản Python sang runtime C++. Nhờ tốc độ đó, parse lại cả 3 triệu
-    dòng trở thành một bước bình thường chứ không còn là việc chạy qua đêm.
+    Trước đó, ở <strong>Mainframe Studio</strong> (08/2024 – 08/2025), tôi đã tối ưu bộ parser này:
+    <strong>thời gian parse một codebase lớn giảm từ 1 giờ 30 phút xuống 45 phút</strong>. Tôi tinh
+    gọn rule grammar, chạy codebase lớn bằng bản Java, và chuyển bản Python sang runtime C++. Nhờ
+    vậy, parse lại 3 triệu dòng thành việc bình thường, không còn phải chạy qua đêm.
   </p>
 
   <h3>2. MCP tool trên dữ liệu đã parse</h3>
   <p>
-    Tôi phát triển <strong>7 trong hơn 20 MCP tool</strong> của nền tảng, tập trung vào những
-    truy vấn bắt buộc phải chính xác:
+    Tôi phát triển <strong>7 trong hơn 20 MCP tool</strong> của nền tảng. LLM gọi các tool này qua
+    tool calling, cho những câu hỏi cần chính xác tuyệt đối:
   </p>
   <ul>
-    <li><strong>Trích xuất phụ thuộc</strong> — chương trình, job và copybook nào tham chiếu tới nhau, và theo chiều nào.</li>
-    <li><strong>Phân tích trường CopyBook</strong> — độ dài, kiểu dữ liệu và vị trí byte của từng biến trong một bản ghi.</li>
-    <li><strong>Phân giải quan hệ</strong> COBOL ↔ JCL ↔ CopyBook, để một câu hỏi về job có thể trả lời thông qua các chương trình mà job đó chạy.</li>
+    <li><strong>Phụ thuộc</strong> — chương trình, job và copybook nào dùng nhau, theo chiều nào.</li>
+    <li><strong>Trường trong CopyBook</strong> — độ dài, kiểu dữ liệu và vị trí byte của từng biến trong bản ghi.</li>
+    <li><strong>Quan hệ COBOL – JCL – CopyBook</strong> — để câu hỏi về một job được trả lời qua các chương trình mà job đó chạy.</li>
   </ul>
   <p>
-    Phân tích trường là chỗ không được phép xấp xỉ. Bản ghi mainframe có độ rộng cố định, nên ý
-    nghĩa của một trường chính là dải byte mà nó chiếm. Lệch một byte không cho ra câu trả lời
-    hơi sai — nó cho ra một trường hoàn toàn khác. Tool tính vị trí byte chính xác tuyệt đối, nên
-    mọi câu trả lời sau đó về cấu trúc dữ liệu đều dựa trên con số đúng, không phải phỏng đoán
-    của mô hình.
+    Vị trí trường không được tính gần đúng. Bản ghi mainframe có độ dài cố định, nên một trường được
+    xác định bằng dải byte của nó. Lệch một byte không phải sai nhẹ, mà là ra một trường khác. Tool
+    tính vị trí chính xác, nên câu trả lời của agent về cấu trúc dữ liệu luôn dùng số đúng.
   </p>
-
   <div class="callout">
     <p>
-      <strong>Nguyên tắc thiết kế:</strong> không bao giờ đặt mô hình vào tình huống mà nó có thể
-      trả lời bằng cách nhớ lại &ldquo;COBOL thường làm thế nào&rdquo;. Mọi thông tin về codebase
-      này đều phải đi qua một lời gọi tool, và tool thì đọc từ mã nguồn đã parse.
+      <strong>Nguyên tắc:</strong> mọi thông tin về codebase đều phải lấy qua tool, và tool đọc từ
+      code đã parse. Mô hình không bao giờ phải tự nhớ COBOL &ldquo;thường&rdquo; viết thế nào.
     </p>
   </div>
 
-  <h3>3. Tự xây layer memory</h3>
+  <h3>3. Bộ nhớ cho agent</h3>
   <p>
-    Ban đầu nhóm dùng một thư viện agent-memory có sẵn, rồi thấy không đủ. Bài toán này không cần
-    một kho sự kiện được nhớ lại, mà cần ba kiểu tra cứu khác nhau trả lời cùng lúc, nên tôi tự
-    xây layer đó.
-  </p>
-  <p>
-    Một câu hỏi kiểu <em>&ldquo;CUSTOMER-ID ảnh hưởng những đâu?&rdquo;</em> được tách thành ba
-    hướng tra trước khi mô hình viết chữ nào:
+    Ban đầu nhóm dùng một thư viện memory có sẵn nhưng không hợp, nên tôi tự xây lớp bộ nhớ. Một câu
+    hỏi như <em>&ldquo;CUSTOMER-ID ảnh hưởng tới đâu?&rdquo;</em> được trả lời qua ba bước:
   </p>
   <div class="flow">
     <span>câu hỏi</span> <b>→</b>
-    <span>truy vấn graph (Neo4j)</span> <b>+</b>
-    <span>semantic retrieval (pgvector)</span> <b>+</b>
-    <span>lấy source</span>
-    <b>→</b> <span>LLM tổng hợp</span>
+    <span>đồ thị (Neo4j)</span> <b>+</b>
+    <span>tìm theo nghĩa (pgvector)</span> <b>+</b>
+    <span>mã nguồn</span>
+    <b>→</b> <span>LLM trả lời</span>
   </div>
   <ul>
-    <li><strong>Knowledge graph Neo4j</strong> giữ đúng cấu trúc mà parser sinh ra — chương trình nào đọc trường nào, job nào chạy chương trình nào. Câu hỏi về phụ thuộc được trả lời ở đây, và câu trả lời là đúng chứ không phải nghe hợp lý.</li>
-    <li><strong>pgvector</strong> lo phần ngữ nghĩa: embedding trên code mainframe đã parse cho nó hiểu nghĩa vượt ra ngoài tên định danh, nên vẫn tìm đúng vùng liên quan khi câu hỏi không nêu thứ gì để graph bám vào.</li>
-    <li><strong>Mã nguồn</strong> được lấy sau cùng, để mô hình suy luận trên code thật chứ không phải trên bản tóm tắt.</li>
+    <li><strong>Đồ thị tri thức Neo4j</strong>, dựng từ output của parser: chương trình nào đọc trường nào, job nào chạy chương trình nào. Câu hỏi về phụ thuộc được trả lời chính xác ở đây.</li>
+    <li><strong>pgvector</strong> để tìm theo nghĩa: embedding trên code mainframe đã parse giúp tìm đúng vùng code, kể cả khi câu hỏi không nêu tên biến hay chương trình.</li>
+    <li><strong>Mã nguồn</strong> được lấy sau cùng, để mô hình làm việc trên code thật chứ không phải bản tóm tắt.</li>
   </ul>
   <p>
-    Tách như vậy là vì hai nửa này hỏng theo hai kiểu khác nhau. Đi trên graph thì chính xác
-    nhưng chỉ trả lời được những gì đã mô hình hoá; tìm theo ngữ nghĩa thì luôn trả về thứ gì đó,
-    nhưng có thể trả về nhầm. Chạy cả hai rồi để mô hình tổng hợp thì chỗ nào có dữ liệu chính
-    xác sẽ bám vào dữ liệu đó, chỗ nào không có vẫn còn thứ dùng được. Layer này tách riêng theo
-    từng dự án và giữ lại những gì agent đã tra cứu qua nhiều phiên làm việc, nên câu hỏi sau
-    không phải tra lại cùng một đoạn code — nhờ đó số lần tra cứu lại code giảm khoảng 75%.
+    Đồ thị thì chính xác nhưng chỉ biết những gì đã được mô hình hoá. Tìm theo nghĩa thì luôn trả về
+    kết quả nhưng có thể sai. Kết hợp cả hai thì chỗ nào trả lời chính xác được sẽ chính xác, chỗ còn
+    lại vẫn có câu trả lời dùng được. Bộ nhớ lưu theo từng dự án và qua nhiều phiên, nên agent không
+    phải tra lại cùng một đoạn code cho câu hỏi sau. Nhờ vậy <strong>số lần tra lại code giảm khoảng
+    75%</strong>.
   </p>
   <p>
-    Bản thân agent chạy trên LangGraph theo vòng
-    <code>retrieve → reason → tool call → answer</code>, backend viết bằng FastAPI.
+    Agent chạy trên LangGraph theo vòng <code>retrieve → reason → tool call → answer</code>, backend
+    viết bằng FastAPI.
   </p>
 
   <h2>Kết quả</h2>
   <table class="res">
-    <tr><th>Chỉ số</th><th>Đo thế nào</th><th>Kết quả</th></tr>
-    <tr>
-      <td>Câu trả lời không có căn cứ</td>
-      <td>Bộ câu hỏi benchmark trên mã nguồn công khai AWS Mainframe Modernization CardDemo</td>
-      <td>~50% → ~20%</td>
-    </tr>
-    <tr>
-      <td>Độ phủ parse</td>
-      <td>Bộ tham chiếu 32 COBOL / 16 JCL + ~3 triệu dòng mã nội bộ</td>
-      <td>100%, 0 lỗi</td>
-    </tr>
-    <tr>
-      <td>Độ chính xác vị trí byte</td>
-      <td>Bố cục bản ghi CopyBook</td>
-      <td>0 sai lệch</td>
-    </tr>
-    <tr>
-      <td>Số lần tra cứu lại code</td>
-      <td>So sánh trước và sau khi có layer memory</td>
-      <td>giảm ~75%</td>
-    </tr>
-    <tr>
-      <td>Độ đúng của sơ đồ luồng</td>
-      <td>Sơ đồ agent vẽ ra so với luồng chạy thật của chương trình</td>
-      <td>70–80%</td>
-    </tr>
-    <tr>
-      <td>Thời gian parse codebase lớn</td>
-      <td>Trước và sau khi tối ưu parser (Mainframe Studio)</td>
-      <td>1 giờ 30 → 45 phút</td>
-    </tr>
+    <tr><th>Chỉ số</th><th>Cách đo</th><th>Kết quả</th></tr>
+    <tr><td>Câu trả lời thiếu căn cứ</td><td>Bộ câu hỏi benchmark trên codebase mainframe công khai AWS CardDemo</td><td>~50% → ~20%</td></tr>
+    <tr><td>Số file parse được</td><td>Bộ tham chiếu 32 COBOL / 16 JCL + ~3 triệu dòng nội bộ</td><td>100%</td></tr>
+    <tr><td>Lỗi vị trí trường</td><td>Cấu trúc bản ghi CopyBook</td><td>0</td></tr>
+    <tr><td>Số lần tra lại code</td><td>Trước và sau khi có lớp bộ nhớ</td><td>giảm ~75%</td></tr>
+    <tr><td>Độ đúng của sơ đồ luồng</td><td>Sơ đồ AI vẽ so với luồng chạy thật</td><td>70–80%</td></tr>
+    <tr><td>Thời gian parse codebase lớn</td><td>Trước và sau khi tối ưu parser (Mainframe Studio)</td><td>1 giờ 30 → 45 phút</td></tr>
   </table>
   <p>
-    Con số chính có thể đọc theo hai chiều: câu trả lời có dẫn nguồn tăng từ ~50% lên ~80%, cũng
-    tức là câu không có căn cứ giảm khoảng 60%. Agent phục vụ 5–6 kỹ sư trong dự án.
-  </p>
-  <p>
-    Con số về sơ đồ luồng mới là con số đáng nhìn nhất. 70–80% đủ hữu ích để định hướng, nhưng
-    không đủ an toàn để tin tuyệt đối — và tôi nói đúng như vậy với các kỹ sư dùng nó.
+    Agent được 5–6 kỹ sư trong dự án sử dụng. Sơ đồ luồng đúng 70–80% đủ để nắm tổng quan, nhưng
+    không nên tin tuyệt đối — tôi cũng nói rõ điều này với đội khi đưa vào dùng.
   </p>
 
   <h2>Công nghệ</h2>
