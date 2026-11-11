@@ -82,8 +82,12 @@
   <p>
     Agent vẫn có thể lấy nhầm số, nên code đối chiếu từng con số trong câu trả lời với database. Nếu
     một số không khớp, code báo lỗi lại cho model, model gọi lại tool với tham số đúng — tối đa ba
-    lần. Mỗi tool tự loại khi vai trò người gọi không có quyền (phân quyền thực thi bằng code theo user ID và
-    vai trò), nên trưởng phòng kinh doanh xem doanh thu, còn kế toán xem chi phí.
+    lần.
+  </p>
+  <p>
+    Phân quyền theo vai trò (RBAC): mỗi tool tự loại khi vai trò người gọi không có quyền, nên trưởng
+    phòng kinh doanh xem doanh thu, còn kế toán xem chi phí. Việc này chặn bằng code, không chỉ dặn
+    trong prompt.
   </p>
   <p>
     Để kiểm tra, tôi xây một <strong>bộ eval gồm 250 câu hỏi trên 12 tháng</strong> dữ liệu thật, rồi
@@ -98,7 +102,7 @@
     <tr><td>Thời gian ra một báo cáo</td><td>3 ngày (làm tay) → 1 ngày</td></tr>
     <tr><td>Độ đúng câu trả lời</td><td>~90% trên 250 câu hỏi, 12 tháng</td></tr>
     <tr><td>Cách tạo ra số liệu</td><td>chỉ qua tool SQL viết sẵn; code đối chiếu lại với DB, model sửa tối đa 3 lần</td></tr>
-    <tr><td>Phân quyền</td><td>tool tự loại theo user ID và vai trò (chặn bằng code)</td></tr>
+    <tr><td>Phân quyền</td><td>RBAC — tool tự loại theo vai trò, chặn bằng code</td></tr>
     <tr><td>Trạng thái</td><td>đã bàn giao cho khách, dùng hằng ngày</td></tr>
   </table>
 
