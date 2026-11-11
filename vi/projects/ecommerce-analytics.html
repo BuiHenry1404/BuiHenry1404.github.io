@@ -36,9 +36,9 @@
   <div class="article__meta">Sàn thương mại điện tử · FPT Software · 06 – 09/2026</div>
 
   <p class="lead">
-    Một AI agent cho doanh nghiệp vận hành sàn thương mại điện tử riêng. Trưởng phòng kinh doanh và kế
-    toán hỏi về doanh thu, chi phí bằng lời, agent trả lời từ database bán hàng và dựng báo cáo kèm
-    biểu đồ. Khách dùng hằng ngày.
+    Một hệ multi-agent cho doanh nghiệp vận hành sàn thương mại điện tử riêng. Trưởng phòng kinh doanh
+    và kế toán hỏi về doanh thu, chi phí bằng lời; một chuỗi agent trả lời từ database bán hàng và
+    dựng báo cáo đầy đủ kèm biểu đồ và slide. Khách dùng hằng ngày.
   </p>
 
   <h2>Bài toán</h2>
@@ -51,14 +51,20 @@
 
   <h2>Agent làm gì</h2>
   <p>
-    Trưởng phòng kinh doanh hỏi doanh thu theo ngày, tháng hoặc năm. Kế toán hỏi chi phí. Agent trả
-    lời ngay trong khung chat, và có thể tạo báo cáo kèm biểu đồ.
+    Câu hỏi nhanh — trưởng phòng kinh doanh hỏi doanh thu theo ngày, tháng hoặc năm, kế toán hỏi chi
+    phí — thì một agent trả lời ngay trong khung chat qua các tool SQL.
+  </p>
+  <p>
+    Làm một báo cáo đầy đủ thì nặng hơn, nên nó chạy thành một chuỗi agent tự chuyển việc cho nhau:
+    một agent liệt kê hoá đơn và tổng hợp theo tháng, agent kế tạo báo cáo, agent khác viết nội dung,
+    và agent cuối làm slide thuyết trình.
   </p>
   <div class="flow">
-    <span>câu hỏi bằng lời</span> <b>→</b>
-    <span>agent</span> <b>→</b>
-    <span>tool SQL</span> <b>→</b>
-    <span>câu trả lời + báo cáo biểu đồ</span>
+    <span>yêu cầu báo cáo</span> <b>→</b>
+    <span>tổng hợp hoá đơn</span> <b>→</b>
+    <span>tạo báo cáo</span> <b>→</b>
+    <span>viết nội dung</span> <b>→</b>
+    <span>slide</span>
   </div>
   <p>
     Tôi là người duy nhất làm phần AI và backend, trong nhóm bốn người (còn lại là một tester, một PM
@@ -87,6 +93,7 @@
   <h2>Kết quả</h2>
   <table class="res">
     <tr><th>Chỉ số</th><th>Kết quả</th></tr>
+    <tr><td>Làm báo cáo</td><td>chuỗi multi-agent: tổng hợp → tạo → viết → slide</td></tr>
     <tr><td>Thời gian ra một báo cáo</td><td>3 ngày (làm tay) → 1 ngày</td></tr>
     <tr><td>Độ đúng câu trả lời</td><td>~90% trên 250 câu hỏi, 12 tháng</td></tr>
     <tr><td>Cách tạo ra số liệu</td><td>chỉ qua tool SQL viết sẵn; code đối chiếu lại với DB, model sửa tối đa 3 lần</td></tr>
