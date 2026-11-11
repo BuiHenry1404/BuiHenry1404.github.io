@@ -52,8 +52,8 @@
   <h2>Agent làm gì</h2>
   <p>
     Một orchestrator đọc mọi tin nhắn. Câu hỏi nhanh — trưởng phòng kinh doanh hỏi doanh thu theo
-    ngày, tháng hoặc năm, kế toán hỏi chi phí — thì nó giao task cho agent cần thiết, agent đó trả
-    lời trong khung chat qua các tool SQL.
+    ngày, tháng hoặc năm, kế toán hỏi chi phí, quản lý kho hỏi tồn kho — thì nó giao task cho agent
+    cần thiết, agent đó trả lời trong khung chat qua các tool SQL.
   </p>
   <p>
     Làm một báo cáo đầy đủ thì nặng hơn, nên nó chạy thành một swarm: mỗi agent xuất ra JSON, agent
@@ -85,9 +85,10 @@
     lần.
   </p>
   <p>
-    Phân quyền theo vai trò (RBAC): mỗi tool tự loại khi vai trò người gọi không có quyền, nên trưởng
-    phòng kinh doanh xem doanh thu, còn kế toán xem chi phí. Việc này chặn bằng code, không chỉ dặn
-    trong prompt.
+    Phân quyền theo vai trò (RBAC): mỗi tool tự loại khi vai trò người gọi không có quyền. Nhờ đó trưởng
+    phòng kinh doanh xem doanh thu, kế toán xem chi phí, còn quản lý kho chỉ được hỏi báo cáo tồn kho —
+    không xem doanh thu. Việc này chặn bằng code, không chỉ dặn trong prompt, và thêm vai trò mới không
+    phải sửa agent.
   </p>
   <p>
     Để kiểm tra, tôi xây một <strong>bộ eval gồm 250 câu hỏi trên 12 tháng</strong> dữ liệu thật, rồi

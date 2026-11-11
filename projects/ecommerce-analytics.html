@@ -53,8 +53,8 @@
   <h2>What it does</h2>
   <p>
     An orchestrator reads every message. For a quick question — the sales lead asks about revenue by
-    day, month or year, the accountant asks about cost — it routes the task to the right agent, which
-    answers in the chat through SQL tools.
+    day, month or year, the accountant asks about cost, the warehouse manager asks about stock — it
+    routes the task to the right agent, which answers in the chat through SQL tools.
   </p>
   <p>
     A full report is more work, so it runs as a swarm: each agent outputs JSON, the next takes that as
@@ -88,8 +88,9 @@
   </p>
   <p>
     Access is controlled by role (RBAC): each tool checks the caller’s user ID and role and drops
-    itself when the role is not allowed, so the sales lead sees revenue and the accountant sees cost.
-    This is enforced in code, not just asked for in the prompt.
+    itself when the role is not allowed. So the sales lead sees revenue, the accountant sees cost, and
+    the warehouse manager can only ask for stock reports — never revenue. This is enforced in code,
+    not just asked for in the prompt, and a new role can be added without touching the agents.
   </p>
   <p>
     To check how well it did, I built an <strong>eval set of 250 questions across 12 months</strong>
