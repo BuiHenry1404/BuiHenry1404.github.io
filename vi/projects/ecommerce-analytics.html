@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Agent phân tích số liệu cho doanh nghiệp TMĐT · Bùi Henry</title>
-<meta name="description" content="Một AI agent trả lời câu hỏi về doanh thu và chi phí trên dữ liệu bán hàng của một sàn TMĐT và dựng báo cáo biểu đồ. Việc làm báo cáo trước đây mất 3 ngày, nay còn 1 ngày.">
-<meta property="og:title" content="Agent phân tích số liệu cho doanh nghiệp TMĐT · Bùi Henry">
-<meta property="og:description" content="Một AI agent trả lời câu hỏi về doanh thu và chi phí trên dữ liệu bán hàng của một sàn TMĐT và dựng báo cáo biểu đồ. Việc làm báo cáo trước đây mất 3 ngày, nay còn 1 ngày.">
+<title>Hệ multi-agent phân tích số liệu cho doanh nghiệp TMĐT · Bùi Henry</title>
+<meta name="description" content="Một orchestrator và bốn agent (Retrieval, Analysis, Validation, Report) biến yêu cầu của quản lý thành báo cáo đã kiểm tra, có biểu đồ và slide. Làm báo cáo từ 3 ngày còn 1, độ chính xác ~90% trên bộ eval 250 câu.">
+<meta property="og:title" content="Hệ multi-agent phân tích số liệu cho doanh nghiệp TMĐT · Bùi Henry">
+<meta property="og:description" content="Một orchestrator và bốn agent (Retrieval, Analysis, Validation, Report) biến yêu cầu của quản lý thành báo cáo đã kiểm tra, có biểu đồ và slide. Làm báo cáo từ 3 ngày còn 1, độ chính xác ~90% trên bộ eval 250 câu.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://buihenry1404.github.io/vi/projects/ecommerce-analytics.html">
 <meta property="og:image" content="https://buihenry1404.github.io/assets/henry.jpg">
@@ -32,86 +32,108 @@
 </nav>
 
 <article class="wrap article">
-  <h1>Agent phân tích số liệu cho doanh nghiệp TMĐT</h1>
+  <h1>Hệ multi-agent phân tích số liệu cho doanh nghiệp TMĐT</h1>
   <div class="article__meta">Sàn thương mại điện tử · FPT Software · 06 – 09/2026</div>
 
   <p class="lead">
-    Một hệ multi-agent cho doanh nghiệp vận hành sàn thương mại điện tử riêng. Trưởng phòng kinh doanh
-    và kế toán hỏi về doanh thu, chi phí bằng lời; một chuỗi agent trả lời từ database bán hàng và
-    dựng báo cáo đầy đủ kèm biểu đồ và slide. Khách dùng hằng ngày.
+    Hệ multi-agent cho một doanh nghiệp vận hành sàn thương mại điện tử riêng. Trưởng phòng kinh
+    doanh, kế toán và quản lý kho hỏi số liệu bằng lời; một orchestrator cùng bốn agent chuyên trách
+    lấy dữ liệu, phân tích, kiểm tra rồi dựng thành báo cáo có biểu đồ và slide. Khách dùng hằng
+    ngày.
   </p>
 
   <h2>Bài toán</h2>
   <p>
-    Toàn bộ dữ liệu bán hàng và hoá đơn đã nằm sẵn trong database, nhưng lấy số ra lại chậm. Mỗi khi
-    trưởng phòng kinh doanh hay kế toán cần số liệu, phải có một nhân viên phân tích gom dữ liệu bằng
-    tay rồi làm báo cáo — mỗi lần mất khoảng <strong>ba ngày</strong>. Có câu hỏi mới thì phải chờ báo
-    cáo lần sau.
+    Dữ liệu bán hàng đã có sẵn nhưng lấy số ra rất chậm. Mỗi báo cáo cần một nhân viên phân tích gom
+    tay, mất khoảng <strong>ba ngày</strong>, và câu hỏi mới phải chờ báo cáo lần sau.
   </p>
 
-  <h2>Agent làm gì</h2>
+  <h2>Kiến trúc: một orchestrator và bốn agent</h2>
   <p>
-    Một orchestrator đọc mọi tin nhắn. Câu hỏi nhanh — trưởng phòng kinh doanh hỏi doanh thu theo
-    ngày, tháng hoặc năm, kế toán hỏi chi phí, quản lý kho hỏi tồn kho — thì nó giao task cho agent
-    cần thiết, agent đó trả lời trong khung chat qua các tool SQL.
-  </p>
-  <p>
-    Làm một báo cáo đầy đủ thì nặng hơn, nên nó chạy thành một swarm: mỗi agent xuất ra JSON, agent
-    kế lấy JSON đó làm input, việc chạy dần xuống chuỗi. Một agent liệt kê hoá đơn và tổng hợp theo
-    tháng, agent kế tạo báo cáo, agent khác viết nội dung, và agent cuối làm slide thuyết trình.
+    Với câu hỏi nhanh, orchestrator giao thẳng cho agent trả lời được. Một báo cáo đầy đủ thì chạy qua
+    cả chuỗi, và mỗi agent chuyển <strong>structured output</strong> cho agent sau thay vì văn bản
+    tự do:
   </p>
   <div class="flow">
-    <span>yêu cầu báo cáo</span> <b>→</b>
-    <span>tổng hợp hoá đơn</span> <b>→</b>
-    <span>tạo báo cáo</span> <b>→</b>
-    <span>viết nội dung</span> <b>→</b>
-    <span>slide</span>
+    <span>yêu cầu</span> <b>→</b>
+    <span>Orchestrator: execution plan</span> <b>→</b>
+    <span>Retrieval</span> <b>→</b>
+    <span>Analysis</span> <b>→</b>
+    <span>Validation</span> <b>→</b>
+    <span>Report</span>
+  </div>
+  <ul>
+    <li><strong>Orchestrator.</strong> Đọc yêu cầu (ví dụ "báo cáo doanh thu tháng 10"), xác định mục tiêu và kỳ báo cáo (01/10–31/10), lập <strong>execution plan dạng JSON</strong> và phân công các agent.</li>
+    <li><strong>Retrieval.</strong> Lấy số liệu qua API bán hàng: tháng này, tháng trước và theo khu vực. Trả về dữ liệu có cấu trúc kèm nguồn.</li>
+    <li><strong>Analysis.</strong> Tính tăng trưởng so với tháng trước, tỷ trọng từng khu vực, khu vực nào tăng hay giảm.</li>
+    <li><strong>Validation.</strong> Kiểm tra kết quả trước khi ai đó nhìn thấy (bên dưới).</li>
+    <li><strong>Report.</strong> Viết nội dung, vẽ biểu đồ bằng <strong>matplotlib</strong>, dựng slide bằng <strong>python-pptx</strong>, xuất ra PDF, Excel và PowerPoint.</li>
+  </ul>
+  <p>Dữ liệu Retrieval agent chuyển cho Analysis:</p>
+  <pre><code>{
+  "period": "2026-10",
+  "total_revenue": 1500000000,
+  "currency": "VND",
+  "regions": [
+    {"name": "North", "revenue": 600000000},
+    {"name": "South", "revenue": 900000000}
+  ],
+  "source": "sales_database"
+}</code></pre>
+
+  <h2>Validation tự sửa lỗi</h2>
+  <p>
+    Số liệu trong báo cáo cho quản lý phải đúng, nên có riêng một <strong>Validation agent</strong>
+    kiểm tra mọi báo cáo trước khi dựng: tổng có khớp không, phép tính tăng trưởng có đúng không, nội
+    dung chữ có nói cùng một điều với con số không, có thiếu dữ liệu không. Agent này trả về pass hoặc
+    fail kèm danh sách lỗi.
+  </p>
+  <div class="flow">
+    <span>Validation: fail</span> <b>→</b>
+    <span>orchestrator tìm agent gây lỗi</span> <b>→</b>
+    <span>agent đó làm lại bước của mình</span> <b>→</b>
+    <span>chạy Validation lại</span>
   </div>
   <p>
-    Tôi là người duy nhất làm phần AI và backend, trong nhóm bốn người (còn lại là một tester, một PM
-    và một BA).
+    Orchestrator không chạy lại từ đầu; nó lần ra agent gây lỗi và chỉ yêu cầu agent đó làm lại. Sau
+    <strong>tối đa 3 lần</strong> mà vẫn lỗi thì workflow dừng và báo người dùng, thay vì gửi đi một
+    báo cáo sai.
   </p>
 
-  <h2>Giữ cho số liệu chính xác</h2>
+  <h2>RBAC ở cấp agent</h2>
   <p>
-    Số liệu phải chính xác, nên AI không tự viết SQL. Nó chỉ được gọi các <strong>tool có SQL viết
-    sẵn</strong> — ví dụ liệt kê hoá đơn trong một ngày hay một tháng, hoặc tính tổng doanh thu của
-    một tháng. Mọi con số trong câu trả lời đều lấy thẳng từ database qua các tool này, không phải do
-    model tự nghĩ ra.
+    Mỗi agent kiểm tra vai trò của người hỏi; vai trò không có quyền thì agent đó bị loại khỏi lần
+    chạy. Trưởng phòng kinh doanh xem doanh thu, kế toán xem chi phí, còn quản lý kho chỉ được hỏi báo
+    cáo tồn kho, không xem doanh thu. Thêm vai trò mới không phải sửa agent.
   </p>
+
+  <h2>Đo độ chính xác thế nào</h2>
   <p>
-    Agent vẫn có thể lấy nhầm số, nên code đối chiếu từng con số trong câu trả lời với database. Nếu
-    một số không khớp, code báo lỗi lại cho model, model gọi lại tool với tham số đúng — tối đa ba
-    lần.
-  </p>
-  <p>
-    Phân quyền theo vai trò (RBAC): mỗi tool tự loại khi vai trò người gọi không có quyền. Nhờ đó trưởng
-    phòng kinh doanh xem doanh thu, kế toán xem chi phí, còn quản lý kho chỉ được hỏi báo cáo tồn kho —
-    không xem doanh thu. Việc này chặn bằng code, không chỉ dặn trong prompt, và thêm vai trò mới không
-    phải sửa agent.
-  </p>
-  <p>
-    Để kiểm tra, tôi xây một <strong>bộ eval gồm 250 câu hỏi trên 12 tháng</strong> dữ liệu thật, rồi
-    so câu trả lời của agent với các báo cáo công ty đã có của những tháng đó. Agent trả lời đúng
-    khoảng <strong>90%</strong>.
+    Tôi xây <strong>bộ eval gồm 250 câu hỏi trên 12 tháng</strong> dữ liệu thật, chấm câu trả lời của
+    hệ thống so với các báo cáo công ty đã có của những tháng đó. Hệ thống trả lời đúng khoảng
+    <strong>90%</strong>.
   </p>
 
   <h2>Kết quả</h2>
   <table class="res">
     <tr><th>Chỉ số</th><th>Kết quả</th></tr>
-    <tr><td>Làm báo cáo</td><td>chuỗi multi-agent: tổng hợp → tạo → viết → slide</td></tr>
     <tr><td>Thời gian ra một báo cáo</td><td>3 ngày (làm tay) → 1 ngày</td></tr>
-    <tr><td>Độ đúng câu trả lời</td><td>~90% trên 250 câu hỏi, 12 tháng</td></tr>
-    <tr><td>Cách tạo ra số liệu</td><td>chỉ qua tool SQL viết sẵn; code đối chiếu lại với DB, model sửa tối đa 3 lần</td></tr>
-    <tr><td>Phân quyền</td><td>RBAC — tool tự loại theo vai trò, chặn bằng code</td></tr>
+    <tr><td>Độ chính xác trên bộ eval</td><td>~90% trên 250 câu, 12 tháng</td></tr>
+    <tr><td>Báo cáo sai bị gửi đi</td><td>chặn từ thiết kế: kiểm tra fail thì làm lại (≤3) hoặc dừng</td></tr>
+    <tr><td>Phân quyền</td><td>RBAC ở cấp agent, 3 vai trò</td></tr>
     <tr><td>Trạng thái</td><td>đã bàn giao cho khách, dùng hằng ngày</td></tr>
   </table>
+  <p>
+    Tôi là người duy nhất làm phần AI và backend, trong nhóm bốn người (cùng một tester, một PM và một
+    BA).
+  </p>
 
   <h2>Công nghệ</h2>
   <div class="tags">
     <span class="tag">Python</span><span class="tag">LangChain</span><span class="tag">LangGraph</span>
     <span class="tag">Azure OpenAI (GPT-5.4-mini)</span><span class="tag">PostgreSQL</span>
-    <span class="tag">SQL tools</span><span class="tag">LLM evaluation</span>
+    <span class="tag">matplotlib</span><span class="tag">python-pptx</span>
+    <span class="tag">LLM evaluation</span>
   </div>
 
   <a class="backlink" href="../#work">← Tất cả dự án</a>

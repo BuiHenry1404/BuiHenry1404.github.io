@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Analytics agent for an e-commerce business · Bùi Henry</title>
-<meta name="description" content="An AI agent that answers revenue and cost questions over an e-commerce platform's sales data and builds chart reports. Reporting that took an analyst 3 days now takes 1.">
-<meta property="og:title" content="Analytics agent for an e-commerce business · Bùi Henry">
-<meta property="og:description" content="An AI agent that answers revenue and cost questions over an e-commerce platform's sales data and builds chart reports. Reporting that took an analyst 3 days now takes 1.">
+<title>Multi-agent analytics for an e-commerce business · Bùi Henry</title>
+<meta name="description" content="An orchestrator and four agents (Retrieval, Analysis, Validation, Report) turn a manager's request into a checked report with charts and slides. Reporting went from 3 days to 1, with ~90% accuracy on a 250-question eval.">
+<meta property="og:title" content="Multi-agent analytics for an e-commerce business · Bùi Henry">
+<meta property="og:description" content="An orchestrator and four agents (Retrieval, Analysis, Validation, Report) turn a manager's request into a checked report with charts and slides. Reporting went from 3 days to 1, with ~90% accuracy on a 250-question eval.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://buihenry1404.github.io/projects/ecommerce-analytics.html">
 <meta property="og:image" content="https://buihenry1404.github.io/assets/henry.jpg">
@@ -32,88 +32,111 @@
 </nav>
 
 <article class="wrap article">
-  <h1>Analytics agent for an e-commerce business</h1>
+  <h1>Multi-agent analytics for an e-commerce business</h1>
   <div class="article__meta">E-commerce platform · FPT Software · Jun – Sep 2026</div>
 
 <p class="lead">
-    A multi-agent system for an e-commerce company that runs its own online platform. The sales lead
-    and the accountant ask about revenue and cost in plain language, and a chain of agents answers
-    from the sales database and builds full reports with charts and slides. It is used every day at
-    the client.
+    A multi-agent system for an e-commerce company that runs its own online platform. The sales
+    lead, the accountant and the warehouse manager ask for numbers in plain language; an
+    orchestrator and four specialist agents fetch the data, analyse it, check it and turn it into a
+    report with charts and slides. It is used every day at the client.
   </p>
 
   <h2>The problem</h2>
   <p>
-    All the sales and invoice data was already in the database, but getting answers out of it was
-    slow. When the sales lead or the accountant needed numbers, an analyst had to pull the data
-    together by hand and build a report — about <strong>three days</strong> of work each time. Any
-    new question meant waiting for the next report.
+    All the sales data already existed, but getting answers out of it was slow. For every report an
+    analyst pulled the data together by hand, which took about <strong>three days</strong>, and any
+    new question had to wait for the next report.
   </p>
 
-  <h2>What it does</h2>
+  <h2>Architecture: an orchestrator and four agents</h2>
   <p>
-    An orchestrator reads every message. For a quick question — the sales lead asks about revenue by
-    day, month or year, the accountant asks about cost, the warehouse manager asks about stock — it
-    routes the task to the right agent, which answers in the chat through SQL tools.
-  </p>
-  <p>
-    A full report is more work, so it runs as a swarm: each agent outputs JSON, the next takes that as
-    its input, and the work flows down the chain. One agent lists the invoices and aggregates them by
-    month, the next builds the report, another writes it up, and a last one turns it into presentation
-    slides.
+    For a quick question, the orchestrator sends it straight to the agent that can answer it. A full
+    report runs through the whole chain, and every agent passes <strong>structured output</strong>
+    to the next instead of free text:
   </p>
   <div class="flow">
-    <span>report request</span> <b>→</b>
-    <span>aggregate invoices</span> <b>→</b>
-    <span>build report</span> <b>→</b>
-    <span>write-up</span> <b>→</b>
-    <span>slides</span>
+    <span>request</span> <b>→</b>
+    <span>Orchestrator: execution plan</span> <b>→</b>
+    <span>Retrieval</span> <b>→</b>
+    <span>Analysis</span> <b>→</b>
+    <span>Validation</span> <b>→</b>
+    <span>Report</span>
+  </div>
+  <ul>
+    <li><strong>Orchestrator.</strong> Reads the request (for example "revenue report for October"), works out the goal and the period (01/10–31/10), writes an <strong>execution plan as JSON</strong> and assigns the other agents.</li>
+    <li><strong>Retrieval.</strong> Fetches the numbers through the sales API: this month, last month, and the split by region. It returns structured data with its source.</li>
+    <li><strong>Analysis.</strong> Computes growth against the previous month, each region's share, and which regions rose or fell.</li>
+    <li><strong>Validation.</strong> Checks the result before anyone sees it (below).</li>
+    <li><strong>Report.</strong> Writes the text, draws charts with <strong>matplotlib</strong> and builds slides with <strong>python-pptx</strong>, then exports PDF, Excel and PowerPoint.</li>
+  </ul>
+  <p>What the Retrieval agent hands to Analysis:</p>
+  <pre><code>{
+  "period": "2026-10",
+  "total_revenue": 1500000000,
+  "currency": "VND",
+  "regions": [
+    {"name": "North", "revenue": 600000000},
+    {"name": "South", "revenue": 900000000}
+  ],
+  "source": "sales_database"
+}</code></pre>
+
+  <h2>Self-correcting validation</h2>
+  <p>
+    Numbers in a management report have to be right, so a dedicated <strong>Validation
+    agent</strong> checks every report before it is built: the totals add up, the growth maths is
+    correct, the text says the same thing as the numbers, and no data is missing. It returns pass or
+    fail with a list of problems.
+  </p>
+  <div class="flow">
+    <span>Validation: fail</span> <b>→</b>
+    <span>orchestrator finds which agent caused it</span> <b>→</b>
+    <span>that agent redoes its step</span> <b>→</b>
+    <span>Validation again</span>
   </div>
   <p>
-    I was the only engineer on the AI and backend side, in a team of four (the others were a tester,
-    a project manager and a business analyst).
+    The orchestrator does not restart the whole run; it traces the error back to the agent that
+    caused it and asks only that agent to redo its step. After <strong>up to 3 retries</strong>, if
+    the problem is still there, the workflow stops and tells the user instead of sending a wrong
+    report.
   </p>
 
-  <h2>Keeping the numbers correct</h2>
+  <h2>RBAC at the agent level</h2>
   <p>
-    Numbers have to be exact, so the AI does not write its own SQL. It can only call
-    <strong>tools with SQL written in advance</strong> — for example, list the invoices for a day or
-    a month, or total a month's revenue. Every number in an answer comes straight from the database
-    through one of these tools, not from the model.
+    Each agent checks the caller's role, and an agent is removed from the run when that role is not
+    allowed to use it. The sales lead sees revenue, the accountant sees cost, and the warehouse
+    manager can only ask for stock reports, never revenue. A new role can be added without changing
+    the agents.
   </p>
+
+  <h2>How accuracy was measured</h2>
   <p>
-    The agent can still pick a wrong number, so code checks every figure in an answer against the
-    database. If a figure does not match, the code sends the error back to the model, which calls the
-    tool again with corrected parameters — up to three times.
-  </p>
-  <p>
-    Access is controlled by role (RBAC): each tool checks the caller’s user ID and role and drops
-    itself when the role is not allowed. So the sales lead sees revenue, the accountant sees cost, and
-    the warehouse manager can only ask for stock reports — never revenue. This is enforced in code,
-    not just asked for in the prompt, and a new role can be added without touching the agents.
-  </p>
-  <p>
-    To check how well it did, I built an <strong>eval set of 250 questions across 12 months</strong>
-    of real data, and compared the agent's answers with the reports the company already had for those
-    months. The agent answered about <strong>90%</strong> of them correctly.
+    I built an <strong>eval set of 250 questions across 12 months</strong> of real data and graded
+    the system's answers against the reports the company already had for those months. It answered
+    about <strong>90%</strong> of them correctly.
   </p>
 
   <h2>Results</h2>
   <table class="res">
     <tr><th>Measure</th><th>Result</th></tr>
-    <tr><td>Report generation</td><td>multi-agent chain: aggregate → build → write → slides</td></tr>
     <tr><td>Time to get a report</td><td>3 days (manual) → 1 day</td></tr>
-    <tr><td>Answer accuracy</td><td>~90% on 250 questions across 12 months</td></tr>
-    <tr><td>How numbers are produced</td><td>pre-written SQL tools; code re-checks against the DB, model corrects (max 3)</td></tr>
-    <tr><td>Access control</td><td>RBAC — tools self-drop by role, enforced in code</td></tr>
+    <tr><td>Accuracy on the eval set</td><td>~90% on 250 questions across 12 months</td></tr>
+    <tr><td>Wrong reports sent out</td><td>none by design — a failed check is retried (≤3) or stops the run</td></tr>
+    <tr><td>Access control</td><td>RBAC at the agent level, 3 roles</td></tr>
     <tr><td>Status</td><td>shipped to the client, in daily use</td></tr>
   </table>
+  <p>
+    I was the only engineer on the AI and backend side, in a team of four (with a tester, a project
+    manager and a business analyst).
+  </p>
 
   <h2>Stack</h2>
   <div class="tags">
     <span class="tag">Python</span><span class="tag">LangChain</span><span class="tag">LangGraph</span>
     <span class="tag">Azure OpenAI (GPT-5.4-mini)</span><span class="tag">PostgreSQL</span>
-    <span class="tag">SQL tools</span><span class="tag">LLM evaluation</span>
+    <span class="tag">matplotlib</span><span class="tag">python-pptx</span>
+    <span class="tag">LLM evaluation</span>
   </div>
 
   <a class="backlink" href="../#work">← All projects</a>

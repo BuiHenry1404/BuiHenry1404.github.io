@@ -258,3 +258,9 @@ footer .wrap { display: flex; justify-content: space-between; gap: var(--s2); fl
 .reveal { opacity: 0; transform: translateY(12px); transition: opacity .35s ease-out, transform .35s ease-out; }
 .reveal.in { opacity: 1; transform: none; }
 @media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; } }
+
+.article pre {
+  max-width: var(--measure); overflow-x: auto; margin: 0 0 1.2rem;
+  background: #070C16; border: 1px solid var(--border); border-radius: 6px; padding: .9rem 1rem;
+}
+.article pre code { background: none; border: 0; padding: 0; color: #C7D2E1; font-size: .85rem; }
