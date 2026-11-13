@@ -105,11 +105,19 @@
     report with flow diagrams drawn in Graphviz / Mermaid from the structured output the tools
     extract from the AST.
   </p>
+  <p>
+    To measure hallucinations, I ran benchmark questions on the public AWS CardDemo codebase and had
+    an <strong>LLM-as-a-judge</strong> grade every answer against the source code. The judge checks
+    four things: whether the <strong>code logic</strong> is described correctly, whether each
+    <strong>function</strong> and <strong>paragraph</strong> is explained for what it really does,
+    and whether the <strong>processing flow</strong> matches the program. The share of answers that
+    got any of these wrong fell from <strong>~50% to ~20%</strong>.
+  </p>
 
   <h2>Results</h2>
   <table class="res">
     <tr><th>Measure</th><th>How it was measured</th><th>Result</th></tr>
-    <tr><td>Hallucinations</td><td>Benchmark questions on the public AWS CardDemo mainframe codebase</td><td>~50% → ~20%</td></tr>
+    <tr><td>Hallucinations</td><td>Benchmark questions on AWS CardDemo, graded by an LLM-as-a-judge (code logic, function, paragraph, processing flow)</td><td>~50% → ~20%</td></tr>
     <tr><td>Files parsed</td><td>32 COBOL / 16 JCL reference set + ~3M lines internal</td><td>100%</td></tr>
     <tr><td>Field offset errors</td><td>CopyBook record layouts</td><td>0</td></tr>
     <tr><td>Repeated code lookups</td><td>Before vs. after the knowledge graph</td><td>~75% fewer</td></tr>

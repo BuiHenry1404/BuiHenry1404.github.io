@@ -102,11 +102,19 @@
     báo cáo theo function (JSON + Markdown), theo file, và theo project với sơ đồ luồng vẽ bằng Graphviz
     / Mermaid từ structured output mà tool trích ra từ AST.
   </p>
+  <p>
+    Để đo hallucination, tôi chạy bộ câu hỏi benchmark trên codebase công khai AWS CardDemo và dùng
+    <strong>LLM-as-a-judge</strong> chấm từng câu trả lời so với mã nguồn. Giám khảo kiểm tra bốn điều:
+    <strong>logic code</strong> có được mô tả đúng không, mỗi <strong>function</strong> và
+    <strong>paragraph</strong> có được giải thích đúng việc nó thật sự làm không, và
+    <strong>luồng xử lý</strong> có khớp với chương trình không. Tỷ lệ câu trả lời sai ở bất kỳ điểm nào
+    trong số này giảm từ <strong>~50% xuống ~20%</strong>.
+  </p>
 
   <h2>Kết quả</h2>
   <table class="res">
     <tr><th>Chỉ số</th><th>Cách đo</th><th>Kết quả</th></tr>
-    <tr><td>Hallucination</td><td>Bộ câu hỏi benchmark trên codebase mainframe công khai AWS CardDemo</td><td>~50% → ~20%</td></tr>
+    <tr><td>Hallucination</td><td>Bộ câu hỏi benchmark trên AWS CardDemo, chấm bằng LLM-as-a-judge (logic code, function, paragraph, luồng xử lý)</td><td>~50% → ~20%</td></tr>
     <tr><td>Số file parse được</td><td>Bộ tham chiếu 32 COBOL / 16 JCL + ~3 triệu dòng nội bộ</td><td>100%</td></tr>
     <tr><td>Lỗi vị trí trường</td><td>Bố cục bản ghi CopyBook</td><td>0</td></tr>
     <tr><td>Số lần tra lại code</td><td>Trước và sau khi có knowledge graph</td><td>giảm ~75%</td></tr>
