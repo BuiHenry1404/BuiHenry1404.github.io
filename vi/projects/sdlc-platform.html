@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AgentBox — nền tảng SDLC đa agent · Bùi Henry</title>
-<meta name="description" content="Sáu agent SDLC và quy trình 9 bước biến ý tưởng thành yêu cầu, thiết kế và mockup, tích hợp Azure DevOps, và đưa các dự án lên dùng nền tảng.">
-<meta property="og:title" content="AgentBox — nền tảng SDLC đa agent · Bùi Henry">
-<meta property="og:description" content="Sáu agent SDLC và quy trình 9 bước biến ý tưởng thành yêu cầu, thiết kế và mockup, tích hợp Azure DevOps, và đưa các dự án lên dùng nền tảng.">
+<title>AgentBox — AI agent cho quy trình phát triển phần mềm · Bùi Henry</title>
+<meta name="description" content="Sáu agent SDLC chuyên trách và workflow tài liệu 9 bước, chọn model theo từng agent giúp giảm ~45% chi phí LLM, Azure DevOps service phía sau Digital Worker System của nhóm, và đưa dự án lên nền tảng với vai trò Forward Deployed Engineer.">
+<meta property="og:title" content="AgentBox — AI agent cho quy trình phát triển phần mềm · Bùi Henry">
+<meta property="og:description" content="Sáu agent SDLC chuyên trách và workflow tài liệu 9 bước, chọn model theo từng agent giúp giảm ~45% chi phí LLM, Azure DevOps service phía sau Digital Worker System của nhóm, và đưa dự án lên nền tảng với vai trò Forward Deployed Engineer.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://buihenry1404.github.io/vi/projects/sdlc-platform.html">
 <meta property="og:image" content="https://buihenry1404.github.io/assets/henry.jpg">
@@ -36,25 +36,20 @@
   <div class="article__meta">AgentBox Ecosystem · FPT Software · 04/2026 – nay</div>
 
   <p class="lead">
-    AgentBox chạy các nhóm AI agent xuyên suốt quy trình phát triển phần mềm. Tôi làm ba phần: các
-    agent soạn tài liệu dự án, phần tích hợp Azure DevOps để developer dùng agent ngay trong công cụ
-    quen thuộc, và hỗ trợ các dự án bắt đầu dùng nền tảng.
+    AgentBox chạy các nhóm AI agent xuyên suốt quy trình phát triển phần mềm. Tôi làm bốn phần: các
+    agent SDLC và workflow tài liệu của chúng, phần chọn model theo từng agent và lớp LLM provider,
+    Azure DevOps service phía sau Digital Worker System của nhóm, và đưa dự án lên nền tảng với vai
+    trò Forward Deployed Engineer.
   </p>
 
-  <h2>Phần 1 — Quy trình soạn tài liệu chạy được ngay lần đầu</h2>
+  <h2>Phần 1 — 6 agent SDLC chuyên trách và workflow 9 bước</h2>
   <p>
-    Quy trình SDLC nhận một ý tưởng sản phẩm còn sơ khai, rồi lần lượt viết yêu cầu, đặc tả, thiết kế
-    và mockup giao diện, mỗi bước do một agent đảm nhận. Khi tôi nhận phần này, <strong>chỉ khoảng một
-    nửa số lần chạy cho ra tài liệu dùng được ngay</strong>. Số còn lại bị thiếu file, hoặc có bước làm
-    ra thứ mà bước sau không dùng được, và phải có người phát hiện rồi chạy lại.
+    Workflow nhận một ý tưởng sản phẩm còn sơ khai rồi viết ra yêu cầu, đặc tả, thiết kế và mockup
+    giao diện. Khi tôi nhận phần này, chỉ khoảng một nửa số lần chạy cho ra tài liệu dùng được ngay.
+    Lỗi nằm ở workflow chứ không ở model: có bước viết văn tự do trong khi bước sau cần một file, có
+    bước bỏ qua đầu ra vì chưa ai đánh dấu là bắt buộc.
   </p>
-  <p>
-    Lỗi nằm ở quy trình chứ không ở mô hình. Có bước viết một đoạn văn dài trong khi bước sau cần một
-    file cụ thể. Có bước bỏ qua luôn một đầu ra vì chưa ai quy định nó là bắt buộc.
-  </p>
-
-  <h3>Thiết kế lại</h3>
-  <p>Tôi dựng lại quy trình thành <strong>9 bước rõ ràng</strong>:</p>
+  <p>Tôi dựng lại thành <strong>9 bước, mỗi bước một đầu ra xác định</strong>:</p>
   <div class="flow">
     <span>brainstorming</span> <b>→</b>
     <span>PRD nháp</span> <b>→</b>
@@ -66,101 +61,107 @@
     <span>mockup</span> <b>→</b>
     <span>ma trận truy vết</span>
   </div>
-  <p>Ba thay đổi tạo ra phần lớn khác biệt:</p>
   <ul>
-    <li><strong>Thêm bước brainstorming ở đầu, có người duyệt.</strong> Ý tưởng mơ hồ thì yêu cầu cũng mơ hồ, và các bước sau đều kém theo. Agent đầu tiên đặt câu hỏi cho tới khi ý tưởng đủ rõ.</li>
-    <li><strong>Mỗi bước phải ra một file cụ thể.</strong> Ví dụ <code>PRD.md</code>, <code>SRS.md</code>, và một ma trận truy vết được các bước sau bổ sung dần. Nhờ vậy có thể kiểm tra tự động xem một bước đã xong chưa.</li>
-    <li><strong>Chỉ chạy lại bước bị lỗi.</strong> Bước nào lỗi thì chạy lại riêng bước đó. Trước đây, lỗi một bước là bỏ cả lần chạy.</li>
+    <li><strong>Bước brainstorming có người duyệt.</strong> Agent đầu tiên đặt câu hỏi cho tới khi ý tưởng đủ rõ để viết yêu cầu.</li>
+    <li><strong>Mỗi bước một file.</strong> <code>PRD.md</code>, <code>SRS.md</code> và ma trận truy vết được các bước sau bổ sung, nên có thể kiểm tra tự động một bước đã xong chưa.</li>
+    <li><strong>Chạy lại theo từng bước.</strong> Bước lỗi được chạy lại (tối đa 2 lần) thay vì bỏ cả lần chạy.</li>
+    <li><strong>Đầu ra truy vết được.</strong> Mức ưu tiên MoSCoW và ID cố định đi từ user story tới yêu cầu, thiết kế và mockup, kèm sơ đồ C4, sequence và ERD.</li>
   </ul>
   <p>
-    Tôi cũng đưa sơ đồ vào bản đặc tả: story map, C4, sequence diagram, ERD và state diagram. Sơ đồ
-    hoặc đúng, hoặc sai thấy ngay, nên tự nó đã là một bước kiểm tra.
+    Tôi xây <strong>6 agent chuyên trách</strong> trên bộ khung có sẵn: brainstorming, phân tích yêu
+    cầu (Job Stories), kiến trúc kèm kịch bản test BDD, UX, mockup, và review PRD theo kiểu Red Team.
+    Mỗi agent có persona, system prompt, skill và tài liệu tham khảo riêng (ký pháp C4, framework NFR,
+    quy ước SRS, checklist review). Tài liệu tham khảo tốt quan trọng hơn cách viết prompt: agent kiến
+    trúc có ký pháp C4 và framework NFR cụ thể sẽ viết ra bản thiết kế mà kiến trúc sư review được.
+  </p>
+  <p>
+    Kết quả: <strong>~90% tài liệu từ agent chỉ cần 1 lần review</strong>, và các agent giúp
+    <strong>4 dự án lên production nhanh hơn</strong>.
   </p>
 
-  <h3>Các agent</h3>
+  <h2>Phần 2 — Chọn model theo từng agent và lớp LLM provider</h2>
   <p>
-    Tôi xây và nâng cấp <strong>6 agent SDLC</strong> từ bộ khung có sẵn: brainstorming, phân tích yêu
-    cầu (Job Stories), kiến trúc kèm kịch bản test BDD, thiết kế UX, mockup giao diện, và review PRD
-    theo kiểu Red Team. Với mỗi agent, tôi viết persona và system prompt, chọn các skill nó được dùng,
-    và bổ sung tài liệu tham khảo như ký pháp C4, framework NFR, quy ước viết SRS và checklist review.
+    Trước đây mọi bước chạy chung một model mặc định. Model rẻ làm hỏng các bước cần suy luận, model
+    đắt thì phí ở các bước đơn giản. Tôi thiết kế và xây phần chọn model theo từng agent:
   </p>
+  <ul>
+    <li><strong>Mỗi agent chạy trên client model của chính nó.</strong> Một lần chạy swarm mở một client cho mỗi deployment được gắn, và mỗi bước chạy trên model của agent đó thay vì model mặc định chung.</li>
+    <li><strong>Một cấu hình, bốn tầng.</strong> Lựa chọn model được truyền xuyên Go CLI, ứng dụng desktop, web UI và orchestrator, nên chạy từ đâu cũng dùng đúng model.</li>
+    <li><strong>Mỗi bước ghi lại model đã dùng</strong>, để so sánh chi phí và chất lượng theo từng agent.</li>
+    <li><strong>Cấu hình provider an toàn hơn.</strong> Credential Azure phải khai báo rõ (không tự lấy ngầm), cấu hình LLM không dùng chung giữa các tài khoản, và một override cũ không còn làm hỏng cả lần chạy.</li>
+  </ul>
+  <p>Kết quả: <strong>chi phí LLM mỗi workflow giảm khoảng 45%</strong>.</p>
+
+  <h2>Phần 3 — Azure DevOps service phía sau Digital Worker System</h2>
   <p>
-    Đầu ra truy vết được từ đầu tới cuối: mức ưu tiên MoSCoW và ID cố định đi từ user story sang yêu
-    cầu, thiết kế và mockup. Hiện có <strong>4 dự án</strong> dùng các agent này, và chúng giúp từng
-    dự án <strong>ra production nhanh hơn</strong>.
+    Digital Worker System của nhóm cho phép developer giao task cho AI agent mà không rời Azure
+    DevOps. Trước đây, mọi bước quanh một task đều do developer làm tay:
   </p>
-  <div class="callout">
-    <p>
-      Tài liệu tham khảo tốt quan trọng hơn cách viết prompt. Chỉ dặn agent kiến trúc &ldquo;hãy thiết
-      kế kiến trúc tốt&rdquo; thì nó viết chung chung. Đưa cho nó ký pháp C4 và một framework NFR cụ
-      thể thì nó viết ra bản thiết kế mà kiến trúc sư có thể review thật.
-    </p>
+  <div class="flow">
+    <span>PM tạo task</span> <b>→</b>
+    <span>dev tạo subtask</span> <b>→</b>
+    <span>dev nhập estimate</span> <b>→</b>
+    <span>dev cập nhật status</span> <b>→</b>
+    <span>dev tìm context, viết code</span> <b>→</b>
+    <span>dev mở PR, cập nhật status</span>
   </div>
-
-  <h3>Chọn model cho từng bước</h3>
+  <p>Có Digital Worker System, developer chỉ cần verify:</p>
+  <div class="flow">
+    <span>PM tạo task</span> <b>→</b>
+    <span>@mention → hộp thư + poller</span> <b>→</b>
+    <span>Digital Worker: subtask, estimate, status, code</span> <b>→</b>
+    <span>tạo nhánh, đẩy code, work item qua REST</span> <b>→</b>
+    <span>PR → dev verify</span>
+  </div>
   <p>
-    Ban đầu mọi bước dùng chung một model. Model rẻ thì làm không tốt các bước cần suy luận nhiều,
-    còn model đắt thì phí ở các bước đơn giản. Tôi làm phần <strong>chọn model theo từng workflow và
-    từng agent</strong>, xuyên qua bốn tầng — Go CLI, ứng dụng desktop, web UI Next.js và orchestrator
-    Python — để mỗi bước chạy đúng model và mức suy luận nó cần. Nhờ vậy <strong>chi phí mỗi lần chạy
-    giảm khoảng 45%</strong>.
-  </p>
-
-  <h2>Phần 2 — Đưa agent vào Azure DevOps</h2>
-  <p>
-    Developer làm việc cả ngày trên Azure DevOps, nên agent cũng cần có mặt ở đó. Tôi xây service tích
-    hợp: một ứng dụng FastAPI gồm <strong>64 module và 32 endpoint</strong> trên 10 router, xác thực
-    token qua Supabase và Azure DevOps REST client chạy bất đồng bộ.
+    Bản thân Digital Worker là sản phẩm của nhóm. Phần của tôi là <strong>Azure DevOps service</strong>
+    mà nó chạy trên đó: một ứng dụng FastAPI gồm <strong>64 module và 32 endpoint trên 10
+    router</strong>, xác thực token qua Supabase và Azure DevOps REST client chạy bất đồng bộ.
   </p>
   <ul>
-    <li><strong>Giao việc bằng <code>@mention</code>.</strong> Developer mention agent trên một work item. Yêu cầu đi qua bước kiểm tra allow-list, trở thành job cho agent, và kết quả trả về thành comment ngay trên work item đó.</li>
-    <li><strong>Biến kết quả AI thành task.</strong> Trước đây, mỗi báo cáo review phải tạo tay 5–8 work item. Giờ parser chuyển từng mục trong báo cáo thành work item qua JSON-Patch, chỉ cần một cú nhấp: <strong>thao tác tay giảm từ 5–8 bước xuống 1</strong>.</li>
+    <li><strong>Hộp thư @mention và poller.</strong> Mỗi lần mention trên work item được đưa vào một hộp thư, poller đọc lần lượt, chạy cho cả Azure DevOps cloud lẫn Azure DevOps Server tự host. Người dùng on-prem được nhận diện bằng tài khoản Windows, và webhook gửi lại cũng không làm một yêu cầu chạy hai lần.</li>
+    <li><strong>Tool REST cho agent.</strong> Agent tạo nhánh, xem trạng thái nhánh, đẩy file và tạo work item (qua JSON-Patch) bằng Azure DevOps REST API.</li>
+    <li><strong>Kết quả gọn gàng trên ticket.</strong> Câu trả lời của agent được đăng thành comment dạng markdown, và ký tự <code>@</code> trong code block không còn bị hiểu là mention.</li>
+    <li><strong>Tự phục hồi.</strong> Task bị treo, mất kết nối hay chạy trùng đều được xử lý tự động; access token được che trong log.</li>
   </ul>
   <p>
-    Job được gửi tới worker trên máy developer để chạy agent và báo kết quả. Webhook có thể gửi cùng
-    một mention nhiều lần, nên mỗi yêu cầu chỉ được chạy một lần. Job chạy lâu cũng tự xử lý khi bị
-    treo, mất kết nối hay chạy trùng: <strong>khoảng 80% job chạy xong mà không cần ai theo dõi</strong>.
-  </p>
-  <p>
-    Có khách hàng yêu cầu dữ liệu phải nằm trong mạng nội bộ của họ, nên tôi bổ sung hỗ trợ
-    <strong>Azure DevOps Server tự host</strong> bên cạnh bản cloud. Access token được che trong log ở
-    cả hai trường hợp.
+    Kết quả: <strong>developer chỉ cần verify thay vì làm 5–8 bước tay cho mỗi task</strong>, và
+    <strong>~80% task của agent trên Azure DevOps chạy xong mà không cần ai theo dõi</strong>.
   </p>
 
-  <h2>Phần 3 — Đưa dự án lên nền tảng (Forward Deployed Engineer)</h2>
+  <h2>Phần 4 — Đưa dự án lên nền tảng (Forward Deployed Engineer)</h2>
   <p>
-    Agent chỉ làm tốt khi đọc được đủ thông tin dự án, mà ở đa số dự án thông tin đó nằm rải rác ở
-    nhiều file và nhóm chat. Với vai trò <strong>Forward Deployed Engineer</strong>, tôi đưa
-    <strong>2 dự án</strong> lên nền tảng: chuyển <strong>khoảng 100 tài liệu rời rạc</strong> (mỗi dự
-    án khoảng 50) lên Azure DevOps Wiki theo cấu trúc trang và mẫu chuẩn, để mọi agent cùng đọc một
-    nguồn thông tin chung của dự án.
+    Agent chỉ làm tốt khi đọc được đủ context của dự án, mà ở đa số dự án context đó nằm rải rác trên
+    SharePoint, docs trong repo và nhóm chat. Với vai trò <strong>Forward Deployed Engineer</strong>,
+    tôi đưa <strong>2 dự án</strong> lên nền tảng:
   </p>
-  <p>
-    Sau đó tôi làm cùng từng đội để đưa workflow agent vào công việc hằng ngày: bước nào giao cho
-    agent, và bước nào vẫn cần người duyệt.
-  </p>
+  <ul>
+    <li><strong>Context engineering.</strong> Chuẩn hóa ~100 tài liệu rời rạc (mỗi dự án khoảng 50) thành Azure DevOps Wiki có cấu trúc, với cây trang và mẫu trang cố định, để mọi agent đọc cùng một context dự án.</li>
+    <li><strong>Triển khai.</strong> Deploy nền tảng lên server của từng đội.</li>
+    <li><strong>Đưa vào dùng.</strong> Làm cùng từng đội để chọn bước nào giao cho agent, bước nào vẫn cần người duyệt.</li>
+  </ul>
 
   <h2>Kết quả</h2>
   <table class="res">
     <tr><th>Chỉ số</th><th>Kết quả</th></tr>
-    <tr><td>Tài liệu dùng được, không cần nhiều vòng review</td><td>~80–90%</td></tr>
-    <tr><td>Chi phí mỗi lần chạy workflow</td><td>giảm ~45%</td></tr>
-    <tr><td>Số dự án dùng agent SDLC</td><td>4, đều ra production nhanh hơn</td></tr>
-    <tr><td>Job chạy xong không cần người theo dõi</td><td>~80%</td></tr>
-    <tr><td>Số bước tay để chuyển kết quả AI thành task trên Azure DevOps</td><td>5–8 → 1</td></tr>
-    <tr><td>Dữ liệu khách nằm trên máy chủ của khách</td><td>có hỗ trợ on-premise</td></tr>
-    <tr><td>Dự án được đưa lên nền tảng (vai trò FDE)</td><td>2, khoảng 100 tài liệu gom về wiki chung</td></tr>
+    <tr><td>Tài liệu từ agent chỉ cần 1 lần review</td><td>~90%</td></tr>
+    <tr><td>Số dự án lên production nhanh hơn nhờ agent SDLC</td><td>4</td></tr>
+    <tr><td>Chi phí LLM mỗi workflow</td><td>giảm ~45%</td></tr>
+    <tr><td>Việc của developer cho mỗi task khi có Digital Worker System</td><td>5–8 bước tay → chỉ verify</td></tr>
+    <tr><td>Task của agent trên Azure DevOps chạy xong không cần theo dõi</td><td>~80%</td></tr>
+    <tr><td>Dự án đưa lên nền tảng (vai trò FDE)</td><td>2 (~100 tài liệu → wiki chung)</td></tr>
   </table>
   <p>
-    Repository có 22 người đóng góp, tôi đứng thứ ba về số commit. AgentBox là sản phẩm của cả nhóm,
-    trang này chỉ nói về phần tôi làm.
+    Repository có khoảng 20 người đóng góp và tôi đứng thứ ba theo số commit. AgentBox và Digital Worker
+    System là sản phẩm của cả nhóm; trang này chỉ nói về phần tôi làm.
   </p>
 
   <h2>Công nghệ</h2>
   <div class="tags">
-    <span class="tag">Python</span><span class="tag">FastAPI</span><span class="tag">Redis</span>
-    <span class="tag">Supabase / PostgreSQL</span>
-    <span class="tag">Azure DevOps REST API</span><span class="tag">Docker</span>
+    <span class="tag">Python</span><span class="tag">Go</span><span class="tag">FastAPI</span>
+    <span class="tag">Redis</span><span class="tag">Supabase / PostgreSQL</span>
+    <span class="tag">Azure DevOps REST API</span><span class="tag">Tauri desktop</span>
+    <span class="tag">Azure OpenAI</span><span class="tag">Docker</span>
   </div>
 
   <a class="backlink" href="../#work">← Tất cả dự án</a>
