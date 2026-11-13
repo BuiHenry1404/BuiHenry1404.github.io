@@ -64,7 +64,7 @@
     <span>Report</span>
   </div>
   <ul>
-    <li><strong>Orchestrator.</strong> Reads the request (for example "revenue report for October"), works out the goal and the period (01/10–31/10), writes an <strong>execution plan as JSON</strong> and assigns the other agents.</li>
+    <li><strong>Orchestrator.</strong> Reads the request (for example "revenue report for October"), works out the goal and the period (01/10–31/10), writes an <strong>execution plan as structured output</strong> and assigns the other agents.</li>
     <li><strong>Retrieval.</strong> Fetches the numbers through the sales API: this month, last month, and the split by region. It returns structured data with its source.</li>
     <li><strong>Analysis.</strong> Computes growth against the previous month, each region's share, and which regions rose or fell.</li>
     <li><strong>Validation.</strong> Checks the result before anyone sees it (below).</li>
