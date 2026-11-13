@@ -40,16 +40,18 @@
 <p class="lead">
     An AI receptionist for a small nail and hair salon. Customers chat to ask about opening hours,
     services and prices, and to book or cancel appointments. The key design choice is what the AI is
-    <em>not</em> allowed to do.
+    <em>not</em> allowed to do. <a href="https://buihenry1404.github.io/salona-booking/">Try the live demo.</a>
   </p>
 
   <h2>Why not let the AI book directly</h2>
   <p>
-    If the AI can write bookings, it will sooner or later make mistakes: it confirms a time that is
-    already taken, quotes a price the salon does not charge, or says &ldquo;you're booked&rdquo; when
-    nothing was saved. Telling it &ldquo;never do that&rdquo; in the prompt reduces these mistakes but
-    does not stop them. For the salon owner, the result is a customer showing up for an appointment
-    that does not exist.
+    If the AI agent could write bookings itself, it would sooner or later break the system: confirm a
+    time that is already taken, quote a price the salon does not charge, or say &ldquo;you're
+    booked&rdquo; when nothing was saved. Worse, an agent that loops or retries could
+    <strong>spam the database</strong> with duplicate or junk bookings and fill up the salon's
+    calendar. Telling it &ldquo;never do that&rdquo; in the prompt reduces these mistakes but does not
+    stop them. For the salon owner, the result is a calendar nobody can trust and customers showing up
+    for appointments that do not exist.
   </p>
 
   <h2>Architecture: one orchestrator, three sub-agents</h2>
@@ -70,7 +72,7 @@
   </div>
   <ul>
     <li><strong>Why sub-agents.</strong> I compared three patterns: Subagents, Handoffs and Router. With Handoffs, sub-agents talk to the customer directly. A Router does not remember a conversation across turns. With Subagents, only the orchestrator talks to the customer, which keeps everything under control.</li>
-    <li><strong>Sub-agents return structured results.</strong> Each sub-agent keeps no state between calls and returns <em>ok</em>, <em>need info</em> or <em>failed</em>, plus facts that code takes from the tools and the database. The orchestrator decides based on these facts, not on another model's free text.</li>
+    <li><strong>Sub-agents return structured output.</strong> Each sub-agent keeps no state between calls and returns <em>ok</em>, <em>need info</em> or <em>failed</em>, plus facts that code takes from the tools and the database. The orchestrator decides based on these facts, not on another model's free text.</li>
     <li><strong>The orchestrator has no business tools.</strong> It cannot read the calendar or work out dates by itself. Every lookup goes through the sub-agent responsible for it.</li>
   </ul>
 
@@ -83,18 +85,32 @@
     example, while a proposal is waiting, the orchestrator cannot start a new booking.
   </p>
   <p>
-    Most of these rules came from mistakes in the first version. Without today's date, the AI booked
-    &ldquo;tomorrow&rdquo; a year ahead. Without real appointment IDs, it made one up and cancelled
-    nothing — so the tool now only accepts IDs from that customer's actual appointments. And when
-    tools returned ready-made sentences, the AI copied them word for word, so tools now return data
-    and the agent writes the reply.
+    Three more rules keep the model from guessing. The context always states today's date, so
+    &ldquo;tomorrow&rdquo; means tomorrow. Appointment IDs are an enum built for this customer and this
+    turn, so the model cannot invent an ID. And tools return data, not ready-made sentences, so the
+    agent writes its own reply instead of copying one.
+  </p>
+
+  <h2>Services and prices</h2>
+  <p>
+    The Services &amp; Pricing agent reads a service catalogue. Each service has a duration and a
+    price range, so a hair dye books a <strong>two-hour slot</strong> instead of a fixed 30 minutes,
+    and the guardrail rejects any amount outside the catalogue's range for the services involved.
+  </p>
+
+  <h2>When a time is already taken</h2>
+  <p>
+    If the customer asks for a time that is already booked, the Booking agent's result is turned from
+    <em>ok</em> into <em>need info</em>, the taken time is never offered again, and the code-written
+    fallback lists the free times instead.
   </p>
 
   <h2>Human-in-the-loop that fits how people chat</h2>
   <p>
     No agent can save a booking. The Booking agent can only create a <strong>proposal</strong>. The
     customer approves it in the next message — by tapping a button or typing a reply, even after
-    asking about something else first. Only then does code save the booking.
+    asking about something else first. Only then does the backend validate the booking and save it
+    in a MongoDB transaction from database values.
   </p>
   <div class="flow">
     <span>turn N: proposal + buttons</span> <b>→</b>
@@ -118,8 +134,8 @@
 
   <h2>Checking every reply in code</h2>
   <p>
-    After each AI answer, <strong>rule-based checks in code</strong> compare it with the facts from
-    the tools and the database, before the customer sees it:
+    Before sending, <strong>the backend validates</strong> every AI answer against the facts from the
+    tools and the database:
   </p>
   <ul>
     <li><strong>False claims</strong> — saying &ldquo;booked&rdquo;, &ldquo;cancelled&rdquo; or &ldquo;moved&rdquo; when nothing was saved this turn.</li>
@@ -130,8 +146,8 @@
   <p>
     If a reply fails, the AI gets <strong>one chance to rewrite it without tools</strong> — same
     facts, no new lookups. If that also fails, a <strong>reply written by code</strong> is sent
-    instead. Replies are not streamed, so the customer never sees a wrong sentence that is later
-    replaced.
+    instead. Replies are plain text, with Markdown stripped, and they are not streamed, so the
+    customer never sees a wrong sentence that is later replaced.
   </p>
   <div class="callout">
     <p>
@@ -145,6 +161,7 @@
     <li><strong>Short-term memory</strong> — one conversation per customer per day. Long histories are summarized with LangChain's summarization middleware.</li>
     <li><strong>Long-term memory per customer</strong> — preferences, notes and the last visit, stored in the LangGraph store on MongoDB and updated when a new conversation starts. Sub-agents do not see it.</li>
     <li><strong>Cost limits</strong> — a maximum number of model and tool calls per turn, and an hourly LLM budget per customer that includes sub-agent calls. When a limit is hit, the customer gets a reply written by code, not a library error.</li>
+    <li><strong>Middleware and limits</strong> — each turn runs through middleware: turn start, the context block, the reply guard and call limits. The orchestrator's recursion limit is sized to the model-call cap, so a turn can never loop past its budget.</li>
     <li><strong>Monitoring</strong> — every run is traced in a self-hosted Langfuse, so speed and cost are visible per turn and conversations stay on our server.</li>
   </ul>
 
@@ -159,8 +176,7 @@
     <tr><td>Cost limits</td><td>call limits per turn + hourly LLM budget per customer</td></tr>
   </table>
   <p>
-    This page describes the orchestrator and sub-agents version, which I am finishing now. It runs
-    locally with a full pytest suite and is not yet used by the salon.
+    It runs with 700+ tests and a <a href="https://buihenry1404.github.io/salona-booking/">public demo</a>.
   </p>
 
   <h2>Stack</h2>

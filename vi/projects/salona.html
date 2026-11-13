@@ -40,13 +40,16 @@
   <p class="lead">
     Lễ tân AI cho một tiệm nail và tóc nhỏ. Khách nhắn tin để hỏi giờ mở cửa, dịch vụ, giá, và để
     đặt hoặc huỷ lịch. Điểm quan trọng nhất trong thiết kế là những việc AI <em>không</em> được làm.
+    <a href="https://buihenry1404.github.io/salona-booking/">Dùng thử bản demo.</a>
   </p>
 
   <h2>Vì sao không để AI tự đặt lịch</h2>
   <p>
-    Nếu AI được tự ghi lịch, sớm muộn nó sẽ sai: xác nhận một giờ đã có người đặt, báo giá mà tiệm
-    không có, hoặc nói &ldquo;đã đặt xong&rdquo; trong khi chưa lưu gì. Dặn &ldquo;không được làm vậy&rdquo;
-    trong prompt chỉ giảm lỗi chứ không chặn được. Với chủ tiệm, hậu quả là khách tới nơi mà lịch hẹn
+    Nếu AI agent được tự ghi lịch, sớm muộn nó sẽ phá vỡ hệ thống: xác nhận một giờ đã có người đặt,
+    báo giá mà tiệm không có, hoặc nói &ldquo;đã đặt xong&rdquo; trong khi chưa lưu gì. Tệ hơn, một
+    agent bị lặp hoặc tự thử lại có thể <strong>spam database</strong> bằng hàng loạt lịch trùng hoặc lịch
+    rác, làm kín cả lịch của tiệm. Dặn &ldquo;không được làm vậy&rdquo; trong prompt chỉ giảm lỗi chứ không
+    chặn được. Với chủ tiệm, hậu quả là một cuốn lịch không ai tin được, và khách tới nơi mà lịch hẹn
     không hề có.
   </p>
 
@@ -67,7 +70,7 @@
   </div>
   <ul>
     <li><strong>Vì sao chọn agent con.</strong> Tôi so ba cách tổ chức agent: Subagents, Handoffs và Router. Với Handoffs, agent con nói thẳng với khách. Router thì không nhớ được hội thoại nhiều lượt. Với Subagents, chỉ agent điều phối nói chuyện với khách, nên dễ kiểm soát.</li>
-    <li><strong>Agent con trả kết quả có cấu trúc.</strong> Agent con không giữ trạng thái giữa các lần gọi, và trả về <em>thành công</em>, <em>thiếu thông tin</em> hoặc <em>thất bại</em>, kèm các dữ kiện do code lấy từ tool và database. Agent điều phối quyết định dựa trên dữ kiện đó, không dựa trên đoạn văn do một model khác viết.</li>
+    <li><strong>Agent con trả structured output.</strong> Agent con không giữ trạng thái giữa các lần gọi, và trả về <em>thành công</em>, <em>thiếu thông tin</em> hoặc <em>thất bại</em>, kèm các dữ kiện do code lấy từ tool và database. Agent điều phối quyết định dựa trên dữ kiện đó, không dựa trên đoạn văn do một model khác viết.</li>
     <li><strong>Agent điều phối không có tool nghiệp vụ.</strong> Nó không tự đọc lịch hay tự tính ngày. Mọi việc tra cứu đều đi qua agent con phụ trách.</li>
   </ul>
 
@@ -80,16 +83,31 @@
     đặt lịch mới.
   </p>
   <p>
-    Phần lớn các quy tắc này đến từ lỗi của phiên bản đầu. Không có ngày hôm nay, AI đặt
-    &ldquo;ngày mai&rdquo; thành một ngày của năm sau. Không có ID lịch thật, AI tự bịa ID để huỷ và
-    không huỷ được gì — nên giờ tool chỉ nhận ID nằm trong các lịch thật của khách đó. Còn khi tool
-    trả về câu soạn sẵn, AI chép nguyên văn, nên giờ tool chỉ trả dữ liệu và agent tự viết câu trả lời.
+    Thêm ba quy tắc để model không phải đoán. Context luôn có ngày hôm nay, nên &ldquo;ngày
+    mai&rdquo; là đúng ngày mai. ID lịch hẹn là một enum dựng riêng cho khách này và lượt này, nên model
+    không thể bịa ID. Và tool trả về dữ liệu chứ không trả câu soạn sẵn, nên agent tự viết câu trả lời
+    thay vì chép lại.
+  </p>
+
+  <h2>Dịch vụ và giá</h2>
+  <p>
+    Agent Dịch vụ &amp; giá đọc danh mục dịch vụ. Mỗi dịch vụ có thời lượng và khoảng giá riêng, nên
+    nhuộm tóc được giữ <strong>2 tiếng</strong> thay vì 30 phút cố định, và guardrail loại mọi số tiền
+    nằm ngoài khoảng giá của các dịch vụ liên quan.
+  </p>
+
+  <h2>Khi giờ khách hỏi đã có người đặt</h2>
+  <p>
+    Nếu khách hỏi một giờ đã kín, kết quả của agent Đặt lịch bị hạ từ <em>thành công</em> thành
+    <em>thiếu thông tin</em>, giờ đã kín không bao giờ được đề xuất lại, và câu dự phòng do code viết sẽ
+    liệt kê các giờ còn trống.
   </p>
 
   <h2>Human-in-the-loop hợp với cách khách nhắn tin</h2>
   <p>
     Không agent nào được lưu lịch. Agent Đặt lịch chỉ tạo <strong>đề xuất</strong>. Khách duyệt ở tin
-    nhắn sau — bấm nút hoặc gõ chữ, kể cả khi đã hỏi xen chuyện khác. Lúc đó code mới lưu lịch.
+    nhắn sau — bấm nút hoặc gõ chữ, kể cả khi đã hỏi xen chuyện khác. Lúc đó backend mới kiểm tra lại và lưu lịch trong một
+    transaction MongoDB bằng dữ liệu trong database.
   </p>
   <div class="flow">
     <span>lượt N: đề xuất + nút bấm</span> <b>→</b>
@@ -113,8 +131,8 @@
 
   <h2>Code kiểm tra mọi câu trả lời</h2>
   <p>
-    Sau mỗi câu trả lời của AI, <strong>các bước kiểm tra bằng code</strong> đối chiếu nó với dữ kiện
-    từ tool và database, trước khi khách nhìn thấy:
+    Trước khi gửi, <strong>backend kiểm tra</strong> mọi câu trả lời của AI, đối chiếu với dữ kiện từ
+    tool và database:
   </p>
   <ul>
     <li><strong>Nói sai sự thật</strong> — báo &ldquo;đã đặt&rdquo;, &ldquo;đã huỷ&rdquo;, &ldquo;đã dời&rdquo; trong khi lượt này chưa lưu gì.</li>
@@ -125,7 +143,8 @@
   <p>
     Câu nào không đạt thì AI được <strong>viết lại một lần, không dùng tool</strong> — giữ nguyên dữ
     kiện, không tra cứu thêm. Vẫn không đạt thì gửi <strong>câu do code soạn sẵn</strong>. Câu trả lời
-    không được stream, nên khách không bao giờ thấy một câu sai rồi bị thay.
+    chỉ là chữ thường, đã bỏ định dạng Markdown, và không được stream, nên khách không bao giờ thấy một
+    câu sai rồi bị thay.
   </p>
   <div class="callout">
     <p>
@@ -140,6 +159,7 @@
     <li><strong>Bộ nhớ ngắn hạn</strong> — mỗi khách một cuộc trò chuyện mỗi ngày. Lịch sử dài được tóm tắt bằng summarization middleware của LangChain.</li>
     <li><strong>Bộ nhớ dài hạn theo từng khách</strong> — sở thích, ghi chú và lần ghé gần nhất, lưu trong store của LangGraph trên MongoDB và được cập nhật khi bắt đầu cuộc trò chuyện mới. Agent con không thấy phần này.</li>
     <li><strong>Giới hạn chi phí</strong> — giới hạn số lần gọi model và tool mỗi lượt, cùng ngân sách LLM theo giờ cho từng khách, tính cả lần gọi của agent con. Khi chạm giới hạn, khách nhận câu do code soạn, không phải thông báo lỗi của thư viện.</li>
+    <li><strong>Middleware và giới hạn</strong> — mỗi lượt đi qua middleware: bắt đầu lượt, khối context, guard câu trả lời và giới hạn số lần gọi. Giới hạn đệ quy của orchestrator được đặt khớp với trần số lần gọi model, nên không lượt nào chạy vượt ngân sách.</li>
     <li><strong>Theo dõi</strong> — mọi lượt chạy được ghi lại trên Langfuse tự host, nên xem được tốc độ và chi phí từng lượt mà hội thoại vẫn nằm trên máy chủ của mình.</li>
   </ul>
 
@@ -154,8 +174,7 @@
     <tr><td>Giới hạn chi phí</td><td>giới hạn số lần gọi mỗi lượt + ngân sách LLM theo giờ mỗi khách</td></tr>
   </table>
   <p>
-    Trang này mô tả phiên bản agent điều phối và agent con mà tôi đang hoàn thiện. Hệ thống chạy local
-    với đầy đủ bộ test pytest, tiệm chưa đưa vào dùng thật.
+    Hệ thống chạy với hơn 700 test và có <a href="https://buihenry1404.github.io/salona-booking/">bản demo công khai</a>.
   </p>
 
   <h2>Công nghệ</h2>
