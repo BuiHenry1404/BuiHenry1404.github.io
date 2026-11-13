@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>xMainframe — an AI agent that answers from real COBOL code · Bùi Henry</title>
-<meta name="description" content="ANTLR4 parsers turn COBOL/JCL/CopyBook into structured data, and MCP tools let the agent look up real dependencies. Unsupported answers fell from ~50% to ~20%.">
-<meta property="og:title" content="xMainframe — an AI agent that answers from real COBOL code · Bùi Henry">
-<meta property="og:description" content="ANTLR4 parsers turn COBOL/JCL/CopyBook into structured data, and MCP tools let the agent look up real dependencies. Unsupported answers fell from ~50% to ~20%.">
+<title>xMainframe — a multi-agent system for mainframe reverse engineering · Bùi Henry</title>
+<meta name="description" content="ANTLR4 parsers and an AST feed a coordinator and two agents that explain COBOL at function, file and project level, backed by a Neo4j knowledge graph, pgvector and MCP tools. Hallucinations fell from ~50% to ~20%.">
+<meta property="og:title" content="xMainframe — a multi-agent system for mainframe reverse engineering · Bùi Henry">
+<meta property="og:description" content="ANTLR4 parsers and an AST feed a coordinator and two agents that explain COBOL at function, file and project level, backed by a Neo4j knowledge graph, pgvector and MCP tools. Hallucinations fell from ~50% to ~20%.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://buihenry1404.github.io/projects/mainframe-agent.html">
 <meta property="og:image" content="https://buihenry1404.github.io/assets/henry.jpg">
@@ -32,137 +32,101 @@
 </nav>
 
 <article class="wrap article">
-  <h1>An AI agent that answers from real COBOL code</h1>
+  <h1>xMainframe: a multi-agent system for mainframe reverse engineering</h1>
   <div class="article__meta">Legacy PGM – xMainframe · FPT Software · Nov 2025 – Apr 2026</div>
 
 <p class="lead">
-    An AI assistant for engineers who maintain mainframe programs. The hard part was not the chat.
-    It was making the agent answer from the real code, not from what the model guesses COBOL
-    usually looks like.
+    A multi-agent system that reverse-engineers legacy mainframe code (COBOL, JCL, CopyBook) and
+    explains it at three levels: each function, each file, and the whole project. The hard part was
+    making the agents answer from the real code, not from what a model guesses COBOL usually looks
+    like.
   </p>
 
   <h2>The problem</h2>
   <p>
-    The customer's mainframe system is decades old, and few people still understand all of it.
-    Before changing anything, an engineer needs to know which programs are affected, which jobs
-    run them and which copybooks define the records. Finding that by hand means reading thousands
-    of lines spread across many files.
-  </p>
-  <p>
-    A normal LLM gets this wrong with confidence. Ask which copybook a program uses and it gives an
-    answer that looks right but is not. In maintenance work that is worse than no answer: the
-    engineer goes and changes the wrong file. So the agent must not be able to answer from the
-    model's memory alone.
+    The customer's mainframe system is decades old and few people still understand all of it. Before
+    changing anything, an engineer needs to know which programs, jobs and copybooks a change touches.
+    A plain LLM answers that with confidence and is often wrong, and in maintenance work a wrong
+    dependency sends an engineer to change the wrong file. So every fact had to come from the code.
   </p>
 
-  <h2>The approach: parse the code first, then let the model look things up</h2>
-  <p>
-    Instead of pasting raw source into the prompt, I turned the codebase into structured data and
-    gave the model tools to query it.
-  </p>
+  <h2>Architecture</h2>
   <div class="flow">
     <span>COBOL / JCL / CopyBook</span> <b>→</b>
-    <span>ANTLR4 parsers</span> <b>→</b>
-    <span>structured JSON</span> <b>→</b>
-    <span>MCP tools</span> <b>→</b>
-    <span>LLM</span>
+    <span>ANTLR4 parsers → AST</span> <b>→</b>
+    <span>Text Processing Agent</span> <b>→</b>
+    <span>knowledge: Neo4j + pgvector + RAG</span> <b>→</b>
+    <span>Code Processing Agent (LLM)</span> <b>→</b>
+    <span>Coordinator: verify</span> <b>→</b>
+    <span>reports: function · file · project</span>
   </div>
 
-  <h3>1. ANTLR4 parsers</h3>
+  <h3>1. Parsing: from raw code to an AST</h3>
   <p>
-    I built ANTLR4 parsers for COBOL, JCL and CopyBook. They output JSON: programs, variables,
-    record layouts and the dependencies between them. The target was strict: <strong>every file
-    must parse</strong>. They parse 100% of a 32 COBOL / 16 JCL reference set and of about 3 million
-    lines of internal code.
-  </p>
-  <p>
-    Real mainframe code is hard to parse. Statements must sit in fixed columns, copybooks are
-    pasted into the code and can be changed while being pasted, and every site uses a slightly
-    different dialect. If a parser skips what it does not understand, the dependency data has
-    gaps — and the agent starts making things up exactly in those gaps.
+    I wrote ANTLR4 grammars for COBOL, JCL and CopyBook that handle fixed-format columns and
+    <code>COPY … REPLACING</code>, then walked the AST with <strong>visitors</strong> to extract
+    programs, paragraphs, variables and <code>CALL</code> / <code>COPY</code> / <code>EXEC</code>
+    dependencies into JSON. Every file parses: <strong>100% of a 32 COBOL / 16 JCL reference set and
+    of ~3 million lines</strong> of internal code. A parser that skipped what it did not understand
+    would leave gaps, and gaps are exactly where an agent starts inventing.
   </p>
   <p>
     I had already optimized these parsers on <strong>Mainframe Studio</strong> (Aug 2024 – Aug
-    2025): <strong>parse time for a large codebase went from 1h30 to 45 minutes</strong>. I
-    simplified the grammar rules, ran large codebases on the Java version, and switched the Python
-    version to the C++ runtime. Because of that, re-parsing 3 million lines became a normal step
-    instead of an overnight job.
+    2025), cutting parse time for a large codebase from <strong>1h30 to 45 minutes</strong> by
+    simplifying grammar rules, running large codebases on Java and the Python parser on a C++
+    runtime.
   </p>
 
-  <h3>2. MCP tools on the parsed data</h3>
-  <p>
-    I developed <strong>7 of the platform's 20+ MCP tools</strong>. The LLM calls them through tool
-    calling, for questions that must be exact:
-  </p>
+  <h3>2. Agents and orchestration</h3>
   <ul>
-    <li><strong>Dependencies</strong> — which programs, jobs and copybooks use each other, and in which direction.</li>
-    <li><strong>CopyBook fields</strong> — the length, data type and byte position of each variable in a record.</li>
-    <li><strong>Links between COBOL, JCL and CopyBook</strong> — so a question about a job can be answered through the programs it runs.</li>
+    <li><strong>Text Processing Agent.</strong> Cleans the code, extracts artifacts from the AST, builds an execution trace (the order of <code>PERFORM</code> / <code>CALL</code> between paragraphs), chunks the code by SECTION and PARAGRAPH, and writes the prompt for the next agent.</li>
+    <li><strong>Code Processing Agent (LLM).</strong> Explains the code at three levels: <strong>function → file → project</strong>. It calls MCP tools for anything factual instead of answering from memory.</li>
+    <li><strong>Coordinator.</strong> Plans what to process, caches results so a paragraph is never explained twice, and verifies every output before it becomes a report.</li>
   </ul>
   <p>
-    Field positions cannot be approximate. Mainframe records have a fixed width, so a field is
-    defined by its byte range. One byte off is not a small error — it is a different field. The
-    tools compute positions exactly, so the agent's answers about data layout use correct numbers,
-    not guesses.
+    I built <strong>7 of the platform's 20+ MCP tools</strong>: dependency lookup, CopyBook field
+    length and byte offset computed from <code>PIC</code> / <code>USAGE</code> clauses, and links
+    between COBOL programs and JCL jobs. Mainframe records are fixed-width, so a field one byte off is
+    a different field; the tools compute offsets exactly (0 errors on the CopyBook layouts).
   </p>
-  <div class="callout">
-    <p>
-      <strong>The rule:</strong> every fact about this codebase comes from a tool call, and the tool
-      reads the parsed code. The model never has to remember how COBOL usually works.
-    </p>
-  </div>
 
-  <h3>3. Agent memory</h3>
-  <p>
-    We started with a ready-made agent memory library, but it did not fit. So I built the memory
-    layer myself. A question like <em>&ldquo;what does CUSTOMER-ID affect?&rdquo;</em> is answered
-    in three steps:
-  </p>
-  <div class="flow">
-    <span>question</span> <b>→</b>
-    <span>graph (Neo4j)</span> <b>+</b>
-    <span>semantic search (pgvector)</span> <b>+</b>
-    <span>source code</span>
-    <b>→</b> <span>LLM answer</span>
-  </div>
+  <h3>3. Knowledge: graph, vectors and RAG</h3>
   <ul>
-    <li><strong>Neo4j knowledge graph</strong>, built from parser output: which program reads which field, which job runs which program. Dependency questions get exact answers here.</li>
-    <li><strong>pgvector</strong> for meaning: embeddings of the parsed mainframe code find the right area even when the question does not name a variable or program.</li>
-    <li><strong>The source code</strong> is fetched last, so the model works on real code, not a summary.</li>
+    <li><strong>Neo4j knowledge graph</strong> built from the AST: programs, copybooks and jobs and the links between them. The agent traces dependencies on the graph instead of reading raw code, which cut repeated code lookups by <strong>~75%</strong> and saved tokens.</li>
+    <li><strong>pgvector</strong> embeddings of the parsed code, to find the right code by meaning when a question does not name a program or variable.</li>
+    <li><strong>RAG</strong> over copybooks, JCL and the DB schema, on chunks cut along SECTION and PARAGRAPH boundaries so a chunk is always a complete unit of logic.</li>
   </ul>
+
+  <h3>4. Evaluation and reports</h3>
   <p>
-    The graph is exact but only knows what was modelled. Semantic search always returns something,
-    but it can be wrong. Using both gives exact answers where possible and useful answers
-    elsewhere. The memory is kept per project and across sessions, so the agent does not look up
-    the same code again for the next question. That <strong>cut repeated code lookups by about
-    75%</strong>.
-  </p>
-  <p>
-    The agent runs on LangGraph as a loop: <code>retrieve → reason → tool call → answer</code>, with
-    a FastAPI backend.
+    The Coordinator checks each explanation with <strong>rule-based validators</strong>,
+    <strong>consistency checks</strong> across the three levels, and a <strong>confidence
+    score</strong>. Output comes as a function report (JSON + Markdown), a file report, and a project
+    report with flow diagrams drawn in Graphviz / Mermaid from the structured output the tools
+    extract from the AST.
   </p>
 
   <h2>Results</h2>
   <table class="res">
     <tr><th>Measure</th><th>How it was measured</th><th>Result</th></tr>
-    <tr><td>Unsupported answers</td><td>Benchmark questions on the public AWS CardDemo mainframe codebase</td><td>~50% → ~20%</td></tr>
+    <tr><td>Hallucinations</td><td>Benchmark questions on the public AWS CardDemo mainframe codebase</td><td>~50% → ~20%</td></tr>
     <tr><td>Files parsed</td><td>32 COBOL / 16 JCL reference set + ~3M lines internal</td><td>100%</td></tr>
-    <tr><td>Field position errors</td><td>CopyBook record layouts</td><td>0</td></tr>
-    <tr><td>Repeated code lookups</td><td>Before vs. after the memory layer</td><td>~75% fewer</td></tr>
-    <tr><td>Flow diagram accuracy</td><td>AI-generated diagrams vs. real program flow</td><td>70–80%</td></tr>
+    <tr><td>Field offset errors</td><td>CopyBook record layouts</td><td>0</td></tr>
+    <tr><td>Repeated code lookups</td><td>Before vs. after the knowledge graph</td><td>~75% fewer</td></tr>
+    <tr><td>Flow diagram accuracy</td><td>Generated diagrams vs. real program flow</td><td>70–80%</td></tr>
     <tr><td>Parse time, large codebase</td><td>Before vs. after parser optimization (Mainframe Studio)</td><td>1h30 → 45 min</td></tr>
   </table>
   <p>
-    The agent was used by 5–6 engineers on the project. Flow diagrams at 70–80% are good for getting
-    an overview but should not be trusted blindly — and that is how I presented them to the team.
+    The system was used by 5–6 engineers on the project. The team had five people; I built the
+    agent pipeline, the parsers, the knowledge layer and 7 of the 20+ MCP tools.
   </p>
 
   <h2>Stack</h2>
   <div class="tags">
-    <span class="tag">Python</span><span class="tag">ANTLR4</span><span class="tag">MCP</span>
-    <span class="tag">LangGraph</span><span class="tag">LangChain</span><span class="tag">FastAPI</span>
+    <span class="tag">Python</span><span class="tag">LangChain</span><span class="tag">LangGraph</span>
+    <span class="tag">FastAPI</span><span class="tag">ANTLR4</span><span class="tag">MCP</span>
     <span class="tag">Neo4j</span><span class="tag">pgvector</span><span class="tag">RAG</span>
-    <span class="tag">COBOL / JCL / CopyBook</span><span class="tag">Docker</span>
+    <span class="tag">Graphviz / Mermaid</span><span class="tag">COBOL / JCL / CopyBook</span><span class="tag">Docker</span>
   </div>
 
   <a class="backlink" href="../#work">← All projects</a>
