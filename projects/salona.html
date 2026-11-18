@@ -71,7 +71,7 @@
     <span>customer</span>
   </div>
   <ul>
-    <li><strong>Why sub-agents.</strong> I compared three patterns: Subagents, Handoffs and Router. With Handoffs, sub-agents talk to the customer directly. A Router does not remember a conversation across turns. With Subagents, only the orchestrator talks to the customer, which keeps everything under control.</li>
+    <li><strong>Why sub-agents.</strong> I compared three patterns: Subagents, Handoffs and Router. With Handoffs, sub-agents talk to the customer directly. A Router does not remember a conversation from one turn to the next. With Subagents, only the orchestrator talks to the customer, which keeps everything under control.</li>
     <li><strong>Sub-agents return structured output.</strong> Each sub-agent keeps no state between calls and returns <em>ok</em>, <em>need info</em> or <em>failed</em>, plus facts that code takes from the tools and the database. The orchestrator decides based on these facts, not on another model's free text.</li>
     <li><strong>The orchestrator has no business tools.</strong> It cannot read the calendar or work out dates by itself. Every lookup goes through the sub-agent responsible for it.</li>
   </ul>

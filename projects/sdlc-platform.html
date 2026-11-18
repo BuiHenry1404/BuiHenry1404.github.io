@@ -36,7 +36,7 @@
   <div class="article__meta">AgentBox Ecosystem · FPT Software · Apr 2026 – present</div>
 
 <p class="lead">
-    AgentBox runs groups of AI agents across the software development lifecycle. I worked on four
+    AgentBox runs groups of AI agents throughout the software development lifecycle. I worked on four
     parts: the SDLC agents and their document workflow, per-agent model resolution and the LLM
     provider layer, the Azure DevOps service behind the team's Digital Worker System, and
     onboarding projects as a Forward Deployed Engineer.
@@ -91,7 +91,7 @@
     <li><strong>Each agent runs on its own model client.</strong> A swarm run opens one client per pinned deployment, and every step runs on its agent's model instead of a shared default.</li>
     <li><strong>One setting, four layers.</strong> The model override is passed through the Go CLI, the desktop app, the web UI and the orchestrator, so the same choice holds wherever a run starts.</li>
     <li><strong>Every step records the model it used</strong>, so cost and quality can be compared per agent.</li>
-    <li><strong>Safer provider setup.</strong> Azure credentials must be set explicitly (no silent fallback), LLM settings are no longer shared across accounts, and a stale override no longer fails the whole run.</li>
+    <li><strong>Safer provider setup.</strong> Azure credentials must be set explicitly (no silent fallback), LLM settings are no longer shared between accounts, and a stale override no longer fails the whole run.</li>
   </ul>
   <p>Result: <strong>LLM cost per workflow cut by about 45%</strong>.</p>
 
@@ -118,7 +118,7 @@
   </div>
   <p>
     The Digital Worker itself is a team build. My part is the <strong>Azure DevOps service</strong>
-    it runs on: a FastAPI application with <strong>64 modules and 32 endpoints across 10
+    it runs on: a FastAPI application with <strong>64 modules and 32 endpoints in 10
     routers</strong>, Supabase token auth and an async Azure DevOps REST client.
   </p>
   <ul>
@@ -135,7 +135,7 @@
   <h2>Part 4 — Onboarding projects (Forward Deployed Engineer)</h2>
   <p>
     Agents are only as good as the project context they can read, and on most projects that
-    context was spread across SharePoint, docs inside repos and chats. As a
+    context was scattered over SharePoint, docs inside repos and chats. As a
     <strong>Forward Deployed Engineer</strong> I onboarded <strong>2 projects</strong>:
   </p>
   <ul>
